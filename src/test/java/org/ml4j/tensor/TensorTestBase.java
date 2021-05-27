@@ -17,6 +17,7 @@ package org.ml4j.tensor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
 import org.mockito.MockitoAnnotations;
 
@@ -26,7 +27,7 @@ import org.mockito.MockitoAnnotations;
  * @author Michael Lavelle
  *
  */
-public abstract class TensorTestBase<D> {
+public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
 
     protected Size size;
 
@@ -36,9 +37,9 @@ public abstract class TensorTestBase<D> {
         size = new Size(2, 2);
     }
 
-    protected abstract Tensor<D> createGradValue(float value, boolean requires_grad);
+    protected abstract T createGradValue(float value, boolean requires_grad);
    
-    protected abstract Tensor<D> createGradValue(D value, boolean requires_grad);
+    protected abstract T createGradValue(D value, boolean requires_grad);
 
     
     protected abstract D createData(float value);
@@ -130,11 +131,11 @@ public abstract class TensorTestBase<D> {
         Assert.assertArrayEquals(y.grad().getDataAsFloatArray(), y_grad.add(createGradValue(y_hv, false)).getDataAsFloatArray(), 0.001f);
     }
 
-    private Tensor<D> one() {
+    private T one() {
         return createGradValue(1, false);
     }
 
-    private Tensor<D> ten() {
+    private T ten() {
         return createGradValue(10, false);
     }
 }

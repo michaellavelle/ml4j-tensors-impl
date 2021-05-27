@@ -1,5 +1,6 @@
 package org.ml4j.tensor;
 
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.nn.neurons.Neurons3D;
 import org.ml4j.nn.neurons.NeuronsActivation;
 import org.ml4j.nn.neurons.NeuronsActivationFeatureOrientation;

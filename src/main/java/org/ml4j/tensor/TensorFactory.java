@@ -14,6 +14,7 @@
 
 package org.ml4j.tensor;
 
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValueFactory;
 
 /**
@@ -21,6 +22,6 @@ import org.ml4j.autograd.AutogradValueFactory;
  * 
  * @author Michael Lavelle
  */
-public interface TensorFactory<D> extends AutogradValueFactory<Tensor<D>, D, Size> {
+public interface TensorFactory<T extends Tensor<T, D>, D> extends AutogradValueFactory<T, D, Size> {
 
 }

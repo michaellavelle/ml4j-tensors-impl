@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.ml4j:ml4j-base-api:2.0.0.RC1">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/ml4j/ml4j-base-api/2.0.0.RC1/ml4j-base-api-2.0.0.RC1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/ml4j/ml4j-base-api/2.0.0.RC1/ml4j-base-api-2.0.0.RC1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/ml4j/ml4j-base-api/2.0.0.RC1/ml4j-base-api-2.0.0.RC1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

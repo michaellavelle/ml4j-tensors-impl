@@ -23,19 +23,19 @@ import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.Tensor;
 
-public class ML4JTensorTest extends TensorTestBase<ML4JTensorOperations> {
+public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
 
 	private static MatrixFactory matrixFactory = new JBlasRowMajorMatrixFactory();
 
 	private static DirectedComponentsContext context =  new DirectedComponentsContextImpl(matrixFactory, true);
 
 	@Override
-	protected Tensor<ML4JTensorOperations> createGradValue(float value, boolean requires_grad) {
+	protected ML4JTensor createGradValue(float value, boolean requires_grad) {
         return new ML4JTensor(context, () -> createData(value), size).requires_grad_(requires_grad);
 	}
 
 	@Override
-	protected Tensor<ML4JTensorOperations> createGradValue(ML4JTensorOperations value, boolean requires_grad) {
+	protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
         return new ML4JTensor(context, () -> value, size).requires_grad_(requires_grad);
 	}
 

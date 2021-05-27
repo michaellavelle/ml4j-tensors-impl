@@ -2,6 +2,7 @@ package org.ml4j.tensor.ml4j;
 
 import org.jvmpy.symbolictensors.Operatable;
 import org.jvmpy.symbolictensors.Operation;
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.EditableMatrix;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
@@ -9,7 +10,6 @@ import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.neurons.*;
 import org.ml4j.nn.neurons.format.ImageNeuronsActivationFormat;
 import org.ml4j.nn.neurons.format.NeuronsActivationFormat;
-import org.ml4j.tensor.Size;
 
 import java.util.ArrayList;
 import java.util.List;

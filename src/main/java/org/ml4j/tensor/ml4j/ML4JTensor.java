@@ -14,12 +14,12 @@
 
 package org.ml4j.tensor.ml4j;
 
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
-import org.ml4j.tensor.Size;
 import org.ml4j.tensor.Tensor;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import org.ml4j.tensor.TensorOperations;
  *
  * @author Michael Lavelle
  */
-public class ML4JTensor extends AutogradValueImpl<Tensor<ML4JTensorOperations>, ML4JTensorOperations, Size> implements AutogradValue<Tensor<ML4JTensorOperations>, ML4JTensorOperations, Size>, DifferentiableWrappedTensorOperations<Tensor<ML4JTensorOperations>, ML4JTensorOperations, Size>, TensorOperations<Tensor<ML4JTensorOperations>>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensorOperations> {
+public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperations, Size> implements AutogradValue<ML4JTensor, ML4JTensorOperations, Size>, DifferentiableWrappedTensorOperations<ML4JTensor, ML4JTensorOperations, Size>, TensorOperations<ML4JTensor>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensor, ML4JTensorOperations> {
 
 	private DirectedComponentsContext context;
 
@@ -52,53 +52,54 @@ public class ML4JTensor extends AutogradValueImpl<Tensor<ML4JTensorOperations>, 
 		this.context = context;
 	}
 
+
 	@Override
 	public int numel() {
 		return size().numel();
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> sum() {
+	public ML4JTensor sum() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> mean() {
+	public ML4JTensor mean() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> norm() {
+	public ML4JTensor norm() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> mul_(Tensor<ML4JTensorOperations> other) {
+	public ML4JTensor mul_(ML4JTensor other) {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> columnSums() {
+	public ML4JTensor columnSums() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> rowSums() {
+	public ML4JTensor rowSums() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> cloneTensor() {
+	public ML4JTensor cloneTensor() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> matmul(Tensor<ML4JTensorOperations> other) {
+	public ML4JTensor matmul(ML4JTensor other) {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> t() {
+	public ML4JTensor t() {
 		return applyUnaryOperator((f, s) -> f.t(), 0, (g, p) -> g, "t", f -> f.t());
 	}
 
@@ -112,32 +113,32 @@ public class ML4JTensor extends AutogradValueImpl<Tensor<ML4JTensorOperations>, 
 		return size().get(dim);
 	}
 	@Override
-	public Tensor<ML4JTensorOperations> size_(Size size) {
+	public ML4JTensor size_(Size size) {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> zero_() {
+	public ML4JTensor zero_() {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> normal_(float v1, float v2) {
+	public ML4JTensor normal_(float v1, float v2) {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> fill_(float value) {
+	public ML4JTensor fill_(float value) {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> view(Size size) {
+	public ML4JTensor view(Size size) {
 		return null;
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> view(int... dims) {
+	public ML4JTensor view(int... dims) {
 		return null;
 	}
 
@@ -147,12 +148,12 @@ public class ML4JTensor extends AutogradValueImpl<Tensor<ML4JTensorOperations>, 
 	}
 
 	@Override
-	protected Tensor<ML4JTensorOperations> createAutogradValue(Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
+	protected ML4JTensor createAutogradValue(Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
 		return new ML4JTensor(context, data, size, children);
 	}
 
 	@Override
-	protected Tensor<ML4JTensorOperations> getInitialInstance() {
+	protected ML4JTensor getInitialInstance() {
 		return this;
 	}
 
@@ -167,12 +168,12 @@ public class ML4JTensor extends AutogradValueImpl<Tensor<ML4JTensorOperations>, 
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> add(Tensor<ML4JTensorOperations> other) {
+	public ML4JTensor add(ML4JTensor other) {
 		return applyBinaryOperator(other, (f, s) -> f.add(s), (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
 	}
 
 	@Override
-	public Tensor<ML4JTensorOperations> get() {
+	public ML4JTensor get() {
 		return this;
 	}
 }

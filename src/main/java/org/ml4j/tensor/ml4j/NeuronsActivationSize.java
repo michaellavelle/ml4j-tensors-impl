@@ -1,5 +1,6 @@
 package org.ml4j.tensor.ml4j;
 
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.nn.neurons.Neurons3D;
 import org.ml4j.nn.neurons.NeuronsActivation;
 import org.ml4j.nn.neurons.NeuronsActivationFeatureOrientation;
@@ -7,7 +8,6 @@ import org.ml4j.nn.neurons.format.NeuronsActivationFormat;
 import org.ml4j.nn.neurons.format.features.Dimension;
 import org.ml4j.nn.neurons.format.features.DimensionScope;
 import org.ml4j.nn.neurons.format.features.FeaturesFormat;
-import org.ml4j.tensor.Size;
 
 import java.util.ArrayList;
 import java.util.List;

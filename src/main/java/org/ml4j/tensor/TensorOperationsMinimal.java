@@ -14,6 +14,7 @@
 package org.ml4j.tensor;
 
 
+import org.jvmpy.symbolictensors.Size;
 import org.jvmpy.symbolictensors.TensorDataContainer;
 
 import java.util.function.Supplier;

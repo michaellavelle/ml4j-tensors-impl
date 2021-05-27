@@ -13,10 +13,10 @@ package org.ml4j.tensor;
  * the License.
  */
 
+import com.google.common.base.Supplier;
+import org.jvmpy.symbolictensors.Size;
 import org.jvmpy.symbolictensors.TensorDataContainer;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
-
-import java.util.function.Supplier;
 
 public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, TensorOperationsMinimal<T>, ArithmeticOperations<T> {
 
