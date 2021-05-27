@@ -110,7 +110,7 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 
 	@Override
 	public int size(int dim) {
-		return size().get(dim);
+		return size().getDimensions().get(dim);
 	}
 	@Override
 	public ML4JTensor size_(Size size) {
