@@ -44,6 +44,14 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>jvmpy-snapshots</id>
+            <url>https://raw.githubusercontent.com/jvmpy/mvn-repository/master/snapshots
+            </url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     <dependencies>
         <dependency>
