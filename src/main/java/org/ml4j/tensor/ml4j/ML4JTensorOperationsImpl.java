@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-
 public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatable<ML4JTensorOperations, Size, ML4JTensorOperations> {
 
 	private MatrixFactory matrixFactory;
@@ -133,7 +132,7 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 
 	@Override
 	public ML4JTensorOperations gte(float value) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -144,20 +143,17 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 
 	@Override
 	public ML4JTensorOperations fill_(float value) {
-		// TODO
-		return this;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public ML4JTensorOperations zero_() {
-		// TODO
-		return this;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public ML4JTensorOperations normal_(float v1, float v2) {
-		// TODO
-		return this;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

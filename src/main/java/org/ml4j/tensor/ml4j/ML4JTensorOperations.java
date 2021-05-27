@@ -12,6 +12,4 @@ public interface ML4JTensorOperations extends TensorOperations<ML4JTensorOperati
 	Matrix getMatrix();
 
 	DirectedComponentsContext getDirectedComponentsContext();
-		
-
 }

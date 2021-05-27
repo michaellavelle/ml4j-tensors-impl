@@ -12,13 +12,13 @@
  * the License.
  */
 
-package org.ml4j.tensor.ml4j;
+package org.ml4j.tensor.djl;
 
+import ai.djl.ndarray.types.Shape;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
-import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+
 /**
  * An AutogradValue implementation that supports the operations defined by TensorOperations,
  * and that takes advantage of the fact that the wrapped data also implements TensorOperations
@@ -34,22 +35,28 @@ import java.util.function.Supplier;
  *
  * @author Michael Lavelle
  */
-public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperations, Size> implements AutogradValue<ML4JTensor, ML4JTensorOperations, Size>, DifferentiableWrappedTensorOperations<ML4JTensor, ML4JTensorOperations, Size>, TensorOperations<ML4JTensor>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensor, ML4JTensorOperations> {
+public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations, Size> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations, Size>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
 
-	private DirectedComponentsContext context;
-
-	public ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size) {
-		this(context, data, size, new ArrayList<>());
+	public DJLTensor(Supplier<DJLTensorOperations> data, Size size) {
+		this(data, size, new ArrayList<>());
 	}
 
-	public ML4JTensor(DirectedComponentsContext context, float data, Size size) {
-		this(context, () -> new ML4JTensorOperationsImpl(context, data, size), size, new ArrayList<>());
+	public DJLTensor(float data, Size size) {
+		this(() -> new DJLTensorOperationsImpl(DJLTensorFactory.getManager().ones(getShape(size)).mul(data)), size, new ArrayList<>());
 	}
 
-	protected ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
+	public static Shape getShape(Size size) {
+		long[] s = new long[size.getDimensions().size()];
+		for (int i = 0; i < s.length; i++) {
+			s[i] = size.getDimensions().get(i);
+		}
+		return new Shape(s);
+	}
+
+	protected DJLTensor(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children) {
 		super(data, size, children);
-		this.context = context;
 	}
+
 
 	@Override
 	public int numel() {
@@ -57,47 +64,47 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	}
 
 	@Override
-	public ML4JTensor sum() {
+	public DJLTensor sum() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor mean() {
+	public DJLTensor mean() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor norm() {
+	public DJLTensor norm() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor mul_(ML4JTensor other) {
+	public DJLTensor mul_(DJLTensor other) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor columnSums() {
+	public DJLTensor columnSums() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor rowSums() {
+	public DJLTensor rowSums() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor cloneTensor() {
+	public DJLTensor cloneTensor() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor matmul(ML4JTensor other) {
+	public DJLTensor matmul(DJLTensor other) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor t() {
+	public DJLTensor t() {
 		return applyUnaryOperator((f, s) -> f.t(), 0, (g, p) -> g, "t", f -> f.t());
 	}
 
@@ -111,32 +118,32 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 		return size().getDimensions().get(dim);
 	}
 	@Override
-	public ML4JTensor size_(Size size) {
+	public DJLTensor size_(Size size) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor zero_() {
+	public DJLTensor zero_() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor normal_(float v1, float v2) {
+	public DJLTensor normal_(float v1, float v2) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor fill_(float value) {
+	public DJLTensor fill_(float value) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor view(Size size) {
+	public DJLTensor view(Size size) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public ML4JTensor view(int... dims) {
+	public DJLTensor view(int... dims) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -146,32 +153,32 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	}
 
 	@Override
-	protected ML4JTensor createAutogradValue(Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
-		return new ML4JTensor(context, data, size, children);
+	protected DJLTensor createAutogradValue(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children) {
+		return new DJLTensor(data, size, children);
 	}
 
 	@Override
-	protected ML4JTensor getInitialInstance() {
+	protected DJLTensor getInitialInstance() {
 		return this;
 	}
 
 	@Override
-	protected Supplier<ML4JTensorOperations> multiplicativeIdentity() {
-		return () -> new ML4JTensorOperationsImpl(context, 1, size());
+	protected Supplier<DJLTensorOperations> multiplicativeIdentity() {
+		return () -> new DJLTensorOperationsImpl(getShape(size()), 1);
 	}
 
 	@Override
-	protected Supplier<ML4JTensorOperations> additiveIdentity() {
-		return () -> new ML4JTensorOperationsImpl(context, 0, size());
+	protected Supplier<DJLTensorOperations> additiveIdentity() {
+		return () -> new DJLTensorOperationsImpl(getShape(size()), 0);
 	}
 
 	@Override
-	public ML4JTensor add(ML4JTensor other) {
+	public DJLTensor add(DJLTensor other) {
 		return applyBinaryOperator(other, (f, s) -> f.add(s), (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
 	}
 
 	@Override
-	public ML4JTensor get() {
+	public DJLTensor get() {
 		return this;
 	}
 }

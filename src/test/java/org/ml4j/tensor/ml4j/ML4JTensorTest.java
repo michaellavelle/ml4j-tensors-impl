@@ -17,11 +17,10 @@ package org.ml4j.tensor.ml4j;
 import org.junit.Assert;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
-import org.ml4j.tensor.TensorTestBase;
 import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
-import org.ml4j.tensor.Tensor;
+import org.ml4j.tensor.TensorTestBase;
 
 public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
 
