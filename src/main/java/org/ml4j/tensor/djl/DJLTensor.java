@@ -79,11 +79,6 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	}
 
 	@Override
-	public DJLTensor mul_(DJLTensor other) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public DJLTensor columnSums() {
 		throw new UnsupportedOperationException();
 	}
@@ -170,11 +165,6 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	@Override
 	protected Supplier<DJLTensorOperations> additiveIdentity() {
 		return () -> new DJLTensorOperationsImpl(getShape(size()), 0);
-	}
-
-	@Override
-	public DJLTensor add(DJLTensor other) {
-		return applyBinaryOperator(other, (f, s) -> f.add(s), (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
 	}
 
 	@Override

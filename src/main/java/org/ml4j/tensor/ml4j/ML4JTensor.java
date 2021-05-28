@@ -72,11 +72,6 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	}
 
 	@Override
-	public ML4JTensor mul_(ML4JTensor other) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public ML4JTensor columnSums() {
 		throw new UnsupportedOperationException();
 	}
@@ -90,11 +85,12 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	public ML4JTensor cloneTensor() {
 		throw new UnsupportedOperationException();
 	}
-
+	/*
 	@Override
 	public ML4JTensor matmul(ML4JTensor other) {
 		throw new UnsupportedOperationException();
 	}
+	 */
 
 	@Override
 	public ML4JTensor t() {
@@ -117,17 +113,21 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 
 	@Override
 	public ML4JTensor zero_() {
-		throw new UnsupportedOperationException();
+		//throw new UnsupportedOperationException();
+		return this;
 	}
 
 	@Override
 	public ML4JTensor normal_(float v1, float v2) {
-		throw new UnsupportedOperationException();
+
+		//throw new UnsupportedOperationException();
+		return this;
 	}
 
 	@Override
 	public ML4JTensor fill_(float value) {
-		throw new UnsupportedOperationException();
+		return this;
+		//throw new UnsupportedOperationException();
 	}
 
 	@Override

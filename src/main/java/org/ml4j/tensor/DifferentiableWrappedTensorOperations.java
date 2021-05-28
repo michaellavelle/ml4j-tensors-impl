@@ -14,7 +14,9 @@
 
 package org.ml4j.tensor;
 
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 
 public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, TensorOperations<V> {
@@ -27,6 +29,22 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 	@Override
 	default V sigmoid() {
 		return applyUnaryOperator(D::sigmoid, (g, v) -> g.mul(sigGrad(v.getDataAsFloatArray()[0])), "gt", s -> s);
+	}
+
+	@Override
+	default V mul_(V other) {
+		return applyInlineBinaryOperator(other, D::mul_, "mul");
+	}
+
+	@Override
+	default V matmul(V other) {
+		return this.applyBinaryOperator(other, D::matmul, (g, p) -> {
+			return g.matmul(p.getLeft());
+		}, (g, p) -> {
+			return g.matmul(p.getRight());
+		}, "matmul", (f, s) -> {
+			return null;
+		});
 	}
 
 	@Override
