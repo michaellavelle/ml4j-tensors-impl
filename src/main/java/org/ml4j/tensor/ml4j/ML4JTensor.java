@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  *
  * @author Michael Lavelle
  */
-public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperations, Size> implements AutogradValue<ML4JTensor, ML4JTensorOperations, Size>, DifferentiableWrappedTensorOperations<ML4JTensor, ML4JTensorOperations, Size>, TensorOperations<ML4JTensor>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensor, ML4JTensorOperations> {
+public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperations, Size> implements AutogradValue<ML4JTensor, ML4JTensorOperations, Size>, DifferentiableWrappedTensorOperations<ML4JTensor, ML4JTensorOperations>, TensorOperations<ML4JTensor>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensor, ML4JTensorOperations> {
 
 	private DirectedComponentsContext context;
 
@@ -137,6 +137,9 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 
 	@Override
 	public ML4JTensor view(int... dims) {
+		if (dims.length == 1 && dims[0] == -1) {
+			return applyUnaryOperator(t -> t.view(-1), (g, v) -> g.view(size()), "view", s -> new Size(s.numel()));
+		}
 		throw new UnsupportedOperationException();
 	}
 

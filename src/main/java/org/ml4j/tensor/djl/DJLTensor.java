@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  *
  * @author Michael Lavelle
  */
-public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations, Size> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations, Size>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
+public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations, Size> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
 
 	public DJLTensor(Supplier<DJLTensorOperations> data, Size size) {
 		this(data, size, new ArrayList<>());

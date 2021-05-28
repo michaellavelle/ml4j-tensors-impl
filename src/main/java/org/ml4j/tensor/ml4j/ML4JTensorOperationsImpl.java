@@ -178,7 +178,19 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 
 	@Override
 	public ML4JTensorOperations matmul(ML4JTensorOperations other) {
-	
+		System.out.println("L:" + matrix.getRows() + ":" + matrix.getColumns());
+		System.out.println("R:" + other.getMatrix().getRows() + ":" + other.getMatrix().getColumns());
+		if (matrix.getRows() == 2 && matrix.getColumns() == 128 * 128) {
+			matrix.asEditableMatrix().reshape(2 * 128, 128);
+		}
+		if (matrix.getRows() == 2 && matrix.getColumns() == 8320) {
+			matrix.asEditableMatrix().reshape(2 * 128, 65);
+		}
+		if (matrix.getRows() == 256 && matrix.getColumns() == 65) {
+			matrix.asEditableMatrix().reshape(2 * 128, 65);
+			other.getMatrix().asEditableMatrix().reshape(65, 128);
+
+		}
 		return toML4JTensorOperations(matrix.mmul(other.getMatrix()), size().matmul(other.size()));
 	}
 

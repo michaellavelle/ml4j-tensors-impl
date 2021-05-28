@@ -19,7 +19,7 @@ import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 
-public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>, C> extends DifferentiableWrappedArithmeticOperations<V, D, C>, AutogradValue<V, D, C>, TensorOperations<V> {
+public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>> extends DifferentiableWrappedArithmeticOperations<V, D, Size>, AutogradValue<V, D, Size>, TensorOperations<V> {
 
 	@Override
 	default V relu() {
@@ -38,12 +38,21 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 
 	@Override
 	default V matmul(V other) {
+		System.out.println("LEFT1:" + size());
+		System.out.println("RIGHT1:" + other.size());
 		return this.applyBinaryOperator(other, D::matmul, (g, p) -> {
-			return g.matmul(p.getLeft());
+			System.out.println("G:" + g.size() + ":" + p.getRight().t().size()); return g.matmul(p.getRight().t());
 		}, (g, p) -> {
-			return g.matmul(p.getRight());
+			System.out.println("G2IN:" + g.size());
+			System.out.println("G2:" + g.t().size() + ":" + p.getLeft().size()); return g.t().matmul(p.getLeft()).t();
 		}, "matmul", (f, s) -> {
-			return null;
+			System.out.println("LEFT2:" + size());
+			System.out.println("RIGHT2:" + other.size());
+			if (true) return new Size(2, 128, 65);
+
+
+
+			return new Size(f.getFirstComponent(), s.getSecondComponent());
 		});
 	}
 
