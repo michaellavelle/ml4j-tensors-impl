@@ -75,6 +75,8 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, T
 
     T view(Size size);
 
+    T reshape_(Size size);
+
     T view(int... dims);
 
     void close();

@@ -14,6 +14,7 @@
 
 package org.ml4j.tensor;
 
+import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
@@ -26,9 +27,18 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 		return applyUnaryOperator(D::relu, (g, v) -> g.mul(v.gt(0)), "gt", s -> s);
 	}
 
+	default V t() {
+		return applyUnaryOperator(D::t, (g, v) -> g.t(), "t", s -> s.t());
+	}
+
 	@Override
 	default V sigmoid() {
 		return applyUnaryOperator(D::sigmoid, (g, v) -> g.mul(sigGrad(v.getDataAsFloatArray()[0])), "gt", s -> s);
+	}
+
+	@Override
+	default V reshape_(Size size) {
+		return applyUnaryOperator(f -> f.reshape_(size), (g, v) -> g.reshape_(size()), "gt", s -> size);
 	}
 
 	@Override
@@ -38,21 +48,19 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 
 	@Override
 	default V matmul(V other) {
-		System.out.println("LEFT1:" + size());
-		System.out.println("RIGHT1:" + other.size());
-		return this.applyBinaryOperator(other, D::matmul, (g, p) -> {
-			System.out.println("G:" + g.size() + ":" + p.getRight().t().size()); return g.matmul(p.getRight().t());
+		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
+		return this.applyBinaryOperator(other, (f, s) -> f.reshape_(sizes[0]).matmul(s.reshape_(sizes[1])), (g, p) -> {
+			return g.reshape_(sizes[2]).matmul(p.getRight().reshape_(sizes[1]).t()).reshape_(size());
 		}, (g, p) -> {
-			System.out.println("G2IN:" + g.size());
-			System.out.println("G2:" + g.t().size() + ":" + p.getLeft().size()); return g.t().matmul(p.getLeft()).t();
+			 return g.reshape_(sizes[2]).t().matmul(p.getLeft().reshape_(sizes[0])).t().reshape_(other.size());
 		}, "matmul", (f, s) -> {
-			System.out.println("LEFT2:" + size());
-			System.out.println("RIGHT2:" + other.size());
-			if (true) return new Size(2, 128, 65);
-
-
-
-			return new Size(f.getFirstComponent(), s.getSecondComponent());
+			Size result =  sizes[3];
+			int[] dims = result.dimensions();
+			int [] firstDims = new int[dims.length- 1];
+			for (int i = 0; i < firstDims.length; i++) {
+				firstDims[i] = dims[i];
+			}
+			return new Size(new Size(firstDims), new Size(dims[dims.length - 1]));
 		});
 	}
 

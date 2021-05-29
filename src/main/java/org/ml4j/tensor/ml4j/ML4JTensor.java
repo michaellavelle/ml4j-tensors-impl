@@ -85,17 +85,6 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	public ML4JTensor cloneTensor() {
 		throw new UnsupportedOperationException();
 	}
-	/*
-	@Override
-	public ML4JTensor matmul(ML4JTensor other) {
-		throw new UnsupportedOperationException();
-	}
-	 */
-
-	@Override
-	public ML4JTensor t() {
-		return applyUnaryOperator((f, s) -> f.t(), 0, (g, p) -> g, "t", f -> f.t());
-	}
 
 	@Override
 	public Size size() {

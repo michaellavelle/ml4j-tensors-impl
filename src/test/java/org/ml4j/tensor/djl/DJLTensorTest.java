@@ -15,6 +15,7 @@
 package org.ml4j.tensor.djl;
 
 import org.junit.Assert;
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.TensorTestBase;
 
 public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
@@ -30,7 +31,17 @@ public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations
 	}
 
 	@Override
+	protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
+		return new DJLTensor(() -> createData(value, size), size).requires_grad_(requires_grad);
+	}
+
+	@Override
 	protected DJLTensorOperations createData(float value) {
+		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value);
+	}
+
+	@Override
+	protected DJLTensorOperations createData(float value, Size size) {
 		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value);
 	}
 

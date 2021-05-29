@@ -22,7 +22,7 @@ import org.ml4j.autograd.BackwardConfig;
 import org.mockito.MockitoAnnotations;
 
 /**
- * A test for our DemoAutogradValue.
+ * A base test for Tensor implementations.
  * 
  * @author Michael Lavelle
  *
@@ -44,7 +44,28 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
     
     protected abstract D createData(float value);
 
-    
+    protected abstract D createData(float value, Size size);
+
+
+    protected abstract T createGradValue(float value, boolean requires_grad, Size size);
+
+    @Test
+    public void testMatMul() {
+        var left = createGradValue(-1, true, new Size(new Size(2, 128), new Size(512))).name_("a");
+        var right = createGradValue(1, true, new Size(512, 65)).name_("a");
+
+        var result = left.matmul(right);
+
+        result.backward();
+
+        Assert.assertNotNull(left.grad());
+        Assert.assertNotNull(right.grad());
+        
+        System.out.println(left.grad().getDataAsFloatArray()[0]);
+        System.out.println(right.grad().getDataAsFloatArray()[0]);
+    }
+
+
     @Test
     public void test_example() {
 

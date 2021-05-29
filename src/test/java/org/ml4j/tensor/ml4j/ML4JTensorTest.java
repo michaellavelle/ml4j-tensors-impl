@@ -15,6 +15,7 @@
 package org.ml4j.tensor.ml4j;
 
 import org.junit.Assert;
+import org.jvmpy.symbolictensors.Size;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
 import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
@@ -34,12 +35,22 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 	}
 
 	@Override
+	protected ML4JTensor createGradValue(float value, boolean requires_grad, Size size) {
+		return new ML4JTensor(context, () -> createData(value, size), size).requires_grad_(requires_grad);
+	}
+
+	@Override
 	protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
         return new ML4JTensor(context, () -> value, size).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected ML4JTensorOperations createData(float value) {
+		return new ML4JTensorOperationsImpl(context, value, size);
+	}
+
+	@Override
+	protected ML4JTensorOperations createData(float value, Size size) {
 		return new ML4JTensorOperationsImpl(context, value, size);
 	}
 

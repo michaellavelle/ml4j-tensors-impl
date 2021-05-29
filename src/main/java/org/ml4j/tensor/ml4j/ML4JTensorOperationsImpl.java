@@ -36,7 +36,7 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	public ML4JTensorOperationsImpl(DirectedComponentsContext directedComponentsContext, float value, Size size) {
 		this.matrixFactory = directedComponentsContext.getMatrixFactory();
 		this.directedComponentsContext = directedComponentsContext;
-		this.matrix = directedComponentsContext.getMatrixFactory().createOnes(size.asMatrixSize().dimensions()[0], size.asMatrixSize().dimensions()[1]).mul(value);
+		this.matrix = directedComponentsContext.getMatrixFactory().createOnes(size.asMatrixSize().sizeComponents[0].numel(), size.asMatrixSize().sizeComponents[1].numel()).mul(value);
 		this.size = size;
 		if (matrix.getRows() == 0 || matrix.getColumns() ==0) {
 			throw new IllegalArgumentException(matrix.getRows() + ":" + matrix.getColumns());
@@ -85,7 +85,6 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	}
 	
 	public ML4JTensorOperations norm() {
-		
 		EditableMatrix norm = matrix.dup().asEditableMatrix();
 		for (int i = 0; i < norm.getLength(); i++) {
 			norm.put(i, (float) Math.sqrt(norm.get(i) * norm.get(i)));
@@ -178,19 +177,6 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 
 	@Override
 	public ML4JTensorOperations matmul(ML4JTensorOperations other) {
-		System.out.println("L:" + matrix.getRows() + ":" + matrix.getColumns());
-		System.out.println("R:" + other.getMatrix().getRows() + ":" + other.getMatrix().getColumns());
-		if (matrix.getRows() == 2 && matrix.getColumns() == 128 * 128) {
-			matrix.asEditableMatrix().reshape(2 * 128, 128);
-		}
-		if (matrix.getRows() == 2 && matrix.getColumns() == 8320) {
-			matrix.asEditableMatrix().reshape(2 * 128, 65);
-		}
-		if (matrix.getRows() == 256 && matrix.getColumns() == 65) {
-			matrix.asEditableMatrix().reshape(2 * 128, 65);
-			other.getMatrix().asEditableMatrix().reshape(65, 128);
-
-		}
 		return toML4JTensorOperations(matrix.mmul(other.getMatrix()), size().matmul(other.size()));
 	}
 
@@ -297,6 +283,15 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	
 	public ML4JTensorOperations view(Size size) {
 	    return toML4JTensorOperations(matrix, size);		
+	}
+
+	@Override
+	public ML4JTensorOperations reshape_(Size size) {
+		if (this.size.numel() != size.numel()) {
+			throw new IllegalArgumentException("Number of elements do not match");
+		}
+		this.size = size;
+		return this;
 	}
 
 	@Override

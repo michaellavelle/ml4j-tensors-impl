@@ -5,6 +5,7 @@ import ai.djl.ndarray.types.Shape;
 import org.jvmpy.symbolictensors.Operation;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -32,6 +33,17 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         if (requires_grad && ndArray.hasGradient()) {
             ndArray.attachGradient();
         }
+    }
+
+    @Override
+    public DJLTensorOperations reshape_(Size size) {
+        Size thisSize = this.getSize(shape);
+        if (thisSize.numel() != size.numel()) {
+            throw new IllegalArgumentException();
+        }
+        thisSize = size;
+        this.shape = getShape(thisSize);
+        return this;
     }
 
     @Override
