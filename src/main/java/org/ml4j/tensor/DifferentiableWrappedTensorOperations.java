@@ -38,7 +38,7 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 
 	@Override
 	default V reshape_(Size size) {
-		return applyUnaryOperator(f -> f.reshape_(size), (g, v) -> g.reshape_(size()), "gt", s -> size);
+		return applyUnaryOperator(f -> f.reshape_(size), (g, v) -> g.reshape_(size()), "reshape", s -> size);
 	}
 
 	@Override

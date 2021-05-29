@@ -43,6 +43,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         }
         thisSize = size;
         this.shape = getShape(thisSize);
+        this.ndArray.reshape(shape);
         return this;
     }
 
@@ -124,6 +125,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     public DJLTensorOperationsImpl(Shape shape, float initialValue) {
         this.ndArray = DJLTensorFactory.getManager().ones(shape).mul(initialValue);
+        this.shape = shape;
     }
 
     public NDArray getNDArray() {
@@ -154,7 +156,16 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations t() {
-        return create(getNDArray().transpose(), false);
+        System.out.println("T:" + size());
+        int[] axes = new int[size().dimensions().length];
+        axes[0] = axes.length - 1;
+        for (int i = 0; i < axes.length - 1; i++) {
+            axes[i + 1] = i;
+        }
+        DJLTensorOperations result = create(getNDArray().transpose(axes), false);
+        System.out.println("T2:" + result.size());
+
+        return result;
     }
 
     @Override
@@ -248,10 +259,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations matmul(DJLTensorOperations other) {
-
-        System.out.println("NDArray:" + ndArray);
-        System.out.println("TH:" + this.size() + (ndArray == null ? "null" : this.ndArray.getShape()));
-        System.out.println("OTH:" + other.size() + (other.getNDArray() == null ? "null" : other.getNDArray().getShape()));
         return applyBinaryOperation(other, (f, s) -> f.matMul(s));
     }
 

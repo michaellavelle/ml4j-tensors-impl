@@ -94,11 +94,6 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	}
 
 	@Override
-	public DJLTensor matmul(DJLTensor other) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public DJLTensor t() {
 		return applyUnaryOperator((f, s) -> f.t(), 0, (g, p) -> g, "t", f -> f.t());
 	}
@@ -114,7 +109,8 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	}
 	@Override
 	public DJLTensor size_(Size size) {
-		throw new UnsupportedOperationException();
+		this.context = size;
+		return this;
 	}
 
 	@Override
