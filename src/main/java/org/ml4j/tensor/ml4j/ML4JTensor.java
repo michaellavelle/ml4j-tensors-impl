@@ -59,17 +59,21 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	@Override
 	public ML4JTensor applyBinaryOperator(ML4JTensor other, BinaryOperator<ML4JTensorOperations> forward, BiFunction<ML4JTensor, Pair<ML4JTensor, ML4JTensor>, ML4JTensor> backThis, BiFunction<ML4JTensor, Pair<ML4JTensor, ML4JTensor>, ML4JTensor> backOther, String op, BinaryOperator<Size> contextMapper) {
 		if (!size().getDimensions().equals(other.size().getDimensions())) {
-			Size broadcastSize = MultiplicationRules.getBroadcast(size(), other.size());
-			System.out.println("Broadcast:" + broadcastSize);
-			System.out.println("BroadcastA:" + size() + ":" + other.size());
+			try {
+				Size broadcastSize = MultiplicationRules.getBroadcast(size(), other.size());
+				System.out.println("Broadcast:" + broadcastSize);
+				System.out.println("BroadcastA:" + size() + ":" + other.size());
 
-			if (broadcastSize.getDimensions().equals(size().getDimensions()) || broadcastSize.getDimensions().equals(other.size().getDimensions())) {
-				float scale1 = (float)broadcastSize.numel() / (float)size().numel();
-				float scale2 = (float)broadcastSize.numel() / (float)other.size().numel();
-				System.out.println("Scale:" + scale1 + ":" + scale2);
-				return super.applyBinaryOperator(other, forward, (g, p) -> getSub(backThis.apply(g, p), size(), scale1).mul(scale1), (g, p) -> getSub(backOther.apply(g, p), other.size(), scale2).mul(scale2), op, (f, s) -> broadcastSize);
-			} else {
-				throw new RuntimeException();
+				if (broadcastSize.getDimensions().equals(size().getDimensions()) || broadcastSize.getDimensions().equals(other.size().getDimensions())) {
+					float scale1 = (float) broadcastSize.numel() / (float) size().numel();
+					float scale2 = (float) broadcastSize.numel() / (float) other.size().numel();
+					System.out.println("Scale:" + scale1 + ":" + scale2);
+					return super.applyBinaryOperator(other, forward, (g, p) -> getSub(backThis.apply(g, p), size(), scale1).mul(scale1), (g, p) -> getSub(backOther.apply(g, p), other.size(), scale2).mul(scale2), op, (f, s) -> broadcastSize);
+				} else {
+					throw new RuntimeException();
+				}
+			} catch (IllegalArgumentException e) {
+				// Size cannot be broadcast, perhaps it's matMul.
 			}
 		}
 		return super.applyBinaryOperator(other, forward, backThis, backOther, op, contextMapper);
