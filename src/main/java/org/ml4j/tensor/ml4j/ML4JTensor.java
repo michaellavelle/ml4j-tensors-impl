@@ -14,7 +14,10 @@
 
 package org.ml4j.tensor.ml4j;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.Matrix;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
@@ -25,6 +28,8 @@ import org.ml4j.tensor.TensorOperations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
@@ -49,6 +54,71 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	protected ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
 		super(data, size, children);
 		this.context = context;
+	}
+
+	@Override
+	public ML4JTensor applyBinaryOperator(ML4JTensor other, BinaryOperator<ML4JTensorOperations> forward, BiFunction<ML4JTensor, Pair<ML4JTensor, ML4JTensor>, ML4JTensor> backThis, BiFunction<ML4JTensor, Pair<ML4JTensor, ML4JTensor>, ML4JTensor> backOther, String op, BinaryOperator<Size> contextMapper) {
+		if (!size().getDimensions().equals(other.size().getDimensions())) {
+			Size broadcastSize = MultiplicationRules.getBroadcast(size(), other.size());
+			System.out.println("Broadcast:" + broadcastSize);
+			System.out.println("BroadcastA:" + size() + ":" + other.size());
+
+			if (broadcastSize.getDimensions().equals(size().getDimensions()) || broadcastSize.getDimensions().equals(other.size().getDimensions())) {
+				float scale1 = (float)broadcastSize.numel() / (float)size().numel();
+				float scale2 = (float)broadcastSize.numel() / (float)other.size().numel();
+				System.out.println("Scale:" + scale1 + ":" + scale2);
+				return super.applyBinaryOperator(other, forward, (g, p) -> getSub(backThis.apply(g, p), size(), scale1).mul(scale1), (g, p) -> getSub(backOther.apply(g, p), other.size(), scale2).mul(scale2), op, (f, s) -> broadcastSize);
+			} else {
+				throw new RuntimeException();
+			}
+		}
+		return super.applyBinaryOperator(other, forward, backThis, backOther, op, contextMapper);
+	}
+
+	private ML4JTensor getSub(ML4JTensor other, Size size, float scale) {
+		if (scale == 1) {
+			return other;
+		} else {
+			boolean scalar = size.dimensions().length == 0;
+			int div = (int) Math.sqrt(scale);
+			int[] dims = other.size().dimensions();
+			int prod = 1;
+			System.out.println("Size:" + size + ":" + other.size());
+			int[] newDims = new int[dims.length];
+			for (int i = 0; i < newDims.length; i++) {
+				System.out.println("div:" + dims[i] + ":" + div);
+				newDims[i] = dims[i] /div;
+				System.out.println("ND:" + newDims[i]);
+				prod = prod * newDims[i];
+			}
+			float[] oldData = other.getDataAsFloatArray();
+			float[] data = new float[prod];
+			int ind = 0;
+			int newInd = 0;
+			System.out.println("Prod:" + prod + ":" + dims.length + ":" + newDims.length);
+			for (int i = 0; i < dims.length; i++) {
+				for (int j = 0; j < dims[i]; j++) {
+					if (j < newDims[i]) {
+						if (newInd < data.length && ind < oldData.length) {
+							System.out.println(newInd + ":" + ind);
+							data[newInd] = oldData[ind];
+						}
+						newInd++;
+
+					}
+					ind++;
+				}
+			}
+
+			Matrix matrixOld = other.data().get().getMatrix();
+			System.out.println("Matrix old:" + matrixOld.getRows() + ":" + matrixOld.getColumns());
+			System.out.println("Data length:" + data.length);
+			Matrix matrix = context.getMatrixFactory().createMatrixFromRowsByRowsArray(matrixOld.getRows() / (int)div, matrixOld.getColumns() / div, data);
+			Size s = scalar ? new Size() : new Size(newDims);
+			ML4JTensorOperations ops = new ML4JTensorOperationsImpl(context, matrix, s);
+			System.out.println("Result:" + s);
+			return new ML4JTensor(context, () -> ops, s);
+		}
 	}
 
 	@Override
@@ -120,11 +190,6 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	}
 
 	@Override
-	public ML4JTensor view(Size size) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public ML4JTensor view(int... dims) {
 		if (dims.length == 1 && dims[0] == -1) {
 			return applyUnaryOperator(t -> t.view(-1), (g, v) -> g.view(size()), "view", s -> new Size(s.numel()));
@@ -157,10 +222,12 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 		return () -> new ML4JTensorOperationsImpl(context, 0, size());
 	}
 
+	/*
 	@Override
 	public ML4JTensor add(ML4JTensor other) {
-		return applyBinaryOperator(other, (f, s) -> f.add(s), (g, p) -> g, (g, p) -> g, "add", (f, s) -> f);
+		return applyBinaryOperator(other, (f, s) -> f.add(s), (g, p) -> g, (g, p) -> g, "add", fgetMappedContext(f, s));
 	}
+	 */
 
 	@Override
 	public ML4JTensor get() {

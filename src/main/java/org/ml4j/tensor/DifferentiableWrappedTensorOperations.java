@@ -14,17 +14,26 @@
 
 package org.ml4j.tensor;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
+
 public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>> extends DifferentiableWrappedArithmeticOperations<V, D, Size>, AutogradValue<V, D, Size>, TensorOperations<V> {
 
 	@Override
 	default V relu() {
 		return applyUnaryOperator(D::relu, (g, v) -> g.mul(v.gt(0)), "gt", s -> s);
+	}
+
+	@Override
+	default V view(Size size) {
+		return applyUnaryOperator(v -> v.view(size), (g, v) -> g.view(size()), "view", s -> size);
 	}
 
 	default V t() {
@@ -49,6 +58,7 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 	@Override
 	default V matmul(V other) {
 		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
+		System.out.println("Target size:" + sizes[sizes.length -1 ]);
 		return this.applyBinaryOperator(other, (f, s) -> f.reshape_(sizes[0]).matmul(s.reshape_(sizes[1])), (g, p) -> {
 			return g.reshape_(sizes[2]).matmul(p.getRight().reshape_(sizes[1]).t()).reshape_(size());
 		}, (g, p) -> {
@@ -62,6 +72,13 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 			}
 			return new Size(new Size(firstDims), new Size(dims[dims.length - 1]));
 		});
+	}
+
+	@Override
+	default Size getMappedContext(Size f, Size s) {
+		Size size = MultiplicationRules.getBroadcast(f, s);
+		System.out.println("MAPPED SIZE:" + size);
+		return size;
 	}
 
 	@Override
