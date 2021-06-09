@@ -43,16 +43,16 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 
 	private DirectedComponentsContext context;
 
-	public ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size) {
-		this(context, data, size, new ArrayList<>());
+	public ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size, boolean requires_grad, boolean create_graph) {
+		this(context, data, size, new ArrayList<>(), requires_grad, create_graph);
 	}
 
-	public ML4JTensor(DirectedComponentsContext context, float data, Size size) {
-		this(context, () -> new ML4JTensorOperationsImpl(context, data, size), size, new ArrayList<>());
+	public ML4JTensor(DirectedComponentsContext context, float data, Size size, boolean requires_grad, boolean create_graph) {
+		this(context, () -> new ML4JTensorOperationsImpl(context, data, size), size, new ArrayList<>(), requires_grad, create_graph);
 	}
 
-	protected ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
-		super(data, size, children);
+	protected ML4JTensor(DirectedComponentsContext context, Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
+		super(data, size, children, requires_grad, create_graph);
 		this.context = context;
 	}
 
@@ -121,7 +121,7 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 			Size s = scalar ? new Size() : new Size(newDims);
 			ML4JTensorOperations ops = new ML4JTensorOperationsImpl(context, matrix, s);
 			System.out.println("Result:" + s);
-			return new ML4JTensor(context, () -> ops, s);
+			return new ML4JTensor(context, () -> ops, s, requires_grad(), create_graph);
 		}
 	}
 
@@ -207,8 +207,8 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 	}
 
 	@Override
-	protected ML4JTensor createAutogradValue(Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children) {
-		return new ML4JTensor(context, data, size, children);
+	protected ML4JTensor createAutogradValue(Supplier<ML4JTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
+		return new ML4JTensor(context, data, size, children, requires_grad, create_graph);
 	}
 
 	@Override

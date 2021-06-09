@@ -37,12 +37,12 @@ import java.util.function.Supplier;
  */
 public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations, Size> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
 
-	public DJLTensor(Supplier<DJLTensorOperations> data, Size size) {
-		this(data, size, new ArrayList<>());
+	public DJLTensor(Supplier<DJLTensorOperations> data, Size size, boolean requires_grad, boolean create_graph) {
+		this(data, size, new ArrayList<>(), requires_grad, create_graph);
 	}
 
-	public DJLTensor(float data, Size size) {
-		this(() -> new DJLTensorOperationsImpl(DJLTensorFactory.getManager().ones(getShape(size)).mul(data)), size, new ArrayList<>());
+	public DJLTensor(float data, Size size, boolean requires_grad, boolean create_graph) {
+		this(() -> new DJLTensorOperationsImpl(DJLTensorFactory.getManager().ones(getShape(size)).mul(data)), size, new ArrayList<>(), requires_grad, create_graph);
 	}
 
 	public static Shape getShape(Size size) {
@@ -53,8 +53,8 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 		return new Shape(s);
 	}
 
-	protected DJLTensor(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children) {
-		super(data, size, children);
+	protected DJLTensor(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
+		super(data, size, children, requires_grad, create_graph);
 	}
 
 
@@ -144,8 +144,8 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	}
 
 	@Override
-	protected DJLTensor createAutogradValue(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children) {
-		return new DJLTensor(data, size, children);
+	protected DJLTensor createAutogradValue(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
+		return new DJLTensor(data, size, children, requires_grad, create_graph);
 	}
 
 	@Override

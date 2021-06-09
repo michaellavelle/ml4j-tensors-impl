@@ -31,17 +31,17 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 
 	@Override
 	protected ML4JTensor createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> createData(value), size).requires_grad_(requires_grad);
+        return new ML4JTensor(context, () -> createData(value), size, requires_grad, false);
 	}
 
 	@Override
 	protected ML4JTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new ML4JTensor(context, () -> createData(value, size), size).requires_grad_(requires_grad);
+		return new ML4JTensor(context, () -> createData(value, size), size, requires_grad, false);
 	}
 
 	@Override
 	protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> value, size).requires_grad_(requires_grad);
+        return new ML4JTensor(context, () -> value, size, requires_grad, false);
 	}
 
 	@Override

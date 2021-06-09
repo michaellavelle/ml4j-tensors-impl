@@ -22,17 +22,17 @@ public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations
 
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad) {
-        return new DJLTensor(() -> createData(value), size).requires_grad_(requires_grad);
+        return new DJLTensor(() -> createData(value), size, requires_grad, false);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(DJLTensorOperations value, boolean requires_grad) {
-        return new DJLTensor(() -> value, size).requires_grad_(requires_grad);
+        return new DJLTensor(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new DJLTensor(() -> createData(value, size), size).requires_grad_(requires_grad);
+		return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
 	}
 
 	@Override

@@ -17,6 +17,6 @@ public class DJLTensorFactory implements TensorFactory<DJLTensor, DJLTensorOpera
 
     @Override
     public DJLTensor create(Supplier<DJLTensorOperations> supplier, Size size) {
-        return new DJLTensor(supplier, size);
+        return new DJLTensor(supplier, size, false, false);
     }
 }
