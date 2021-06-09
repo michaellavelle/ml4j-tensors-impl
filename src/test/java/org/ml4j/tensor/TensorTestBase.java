@@ -60,9 +60,6 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
 
         Assert.assertNotNull(left.grad());
         Assert.assertNotNull(right.grad());
-        
-        System.out.println(left.grad().getDataAsFloatArray()[0]);
-        System.out.println(right.grad().getDataAsFloatArray()[0]);
     }
 
 

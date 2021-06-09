@@ -156,14 +156,12 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations t() {
-        System.out.println("T:" + size());
         int[] axes = new int[size().dimensions().length];
         axes[0] = axes.length - 1;
         for (int i = 0; i < axes.length - 1; i++) {
             axes[i + 1] = i;
         }
         DJLTensorOperations result = create(getNDArray().transpose(axes), false);
-        System.out.println("T2:" + result.size());
 
         return result;
     }

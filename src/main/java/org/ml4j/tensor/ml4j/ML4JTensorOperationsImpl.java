@@ -200,8 +200,6 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	private ML4JTensorOperations apply(ML4JTensorOperations other, UnaryOperator<Matrix> columnVectorOp,
                                        UnaryOperator<Matrix> rowVectorOp, UnaryOperator<Matrix> matrixOp) {
 
-		System.out.println("APPLYING:" + size + ":" + other.size());
-
 		if (requiresSecondMatrixColumnBroadcast(matrix, other.getMatrix())) {
 			return toML4JTensorOperations(columnVectorOp.apply(matrix), size);
 					

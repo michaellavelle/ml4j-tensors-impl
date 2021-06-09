@@ -61,13 +61,10 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 		if (!size().getDimensions().equals(other.size().getDimensions())) {
 			try {
 				Size broadcastSize = MultiplicationRules.getBroadcast(size(), other.size());
-				System.out.println("Broadcast:" + broadcastSize);
-				System.out.println("BroadcastA:" + size() + ":" + other.size());
 
 				if (broadcastSize.getDimensions().equals(size().getDimensions()) || broadcastSize.getDimensions().equals(other.size().getDimensions())) {
 					float scale1 = (float) broadcastSize.numel() / (float) size().numel();
 					float scale2 = (float) broadcastSize.numel() / (float) other.size().numel();
-					System.out.println("Scale:" + scale1 + ":" + scale2);
 					return super.applyBinaryOperator(other, forward, (g, p) -> getSub(backThis.apply(g, p), size(), scale1).mul(scale1), (g, p) -> getSub(backOther.apply(g, p), other.size(), scale2).mul(scale2), op, (f, s) -> broadcastSize);
 				} else {
 					throw new RuntimeException();
@@ -87,24 +84,19 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 			int div = (int) Math.sqrt(scale);
 			int[] dims = other.size().dimensions();
 			int prod = 1;
-			System.out.println("Size:" + size + ":" + other.size());
 			int[] newDims = new int[dims.length];
 			for (int i = 0; i < newDims.length; i++) {
-				System.out.println("div:" + dims[i] + ":" + div);
 				newDims[i] = dims[i] /div;
-				System.out.println("ND:" + newDims[i]);
 				prod = prod * newDims[i];
 			}
 			float[] oldData = other.getDataAsFloatArray();
 			float[] data = new float[prod];
 			int ind = 0;
 			int newInd = 0;
-			System.out.println("Prod:" + prod + ":" + dims.length + ":" + newDims.length);
 			for (int i = 0; i < dims.length; i++) {
 				for (int j = 0; j < dims[i]; j++) {
 					if (j < newDims[i]) {
 						if (newInd < data.length && ind < oldData.length) {
-							System.out.println(newInd + ":" + ind);
 							data[newInd] = oldData[ind];
 						}
 						newInd++;
@@ -115,12 +107,9 @@ public class ML4JTensor extends AutogradValueImpl<ML4JTensor, ML4JTensorOperatio
 			}
 
 			Matrix matrixOld = other.data().get().getMatrix();
-			System.out.println("Matrix old:" + matrixOld.getRows() + ":" + matrixOld.getColumns());
-			System.out.println("Data length:" + data.length);
 			Matrix matrix = context.getMatrixFactory().createMatrixFromRowsByRowsArray(matrixOld.getRows() / (int)div, matrixOld.getColumns() / div, data);
 			Size s = scalar ? new Size() : new Size(newDims);
 			ML4JTensorOperations ops = new ML4JTensorOperationsImpl(context, matrix, s);
-			System.out.println("Result:" + s);
 			return new ML4JTensor(context, () -> ops, s, requires_grad(), create_graph);
 		}
 	}

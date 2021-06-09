@@ -58,7 +58,6 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 	@Override
 	default V matmul(V other) {
 		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
-		System.out.println("Target size:" + sizes[sizes.length -1 ]);
 		return this.applyBinaryOperator(other, (f, s) -> f.reshape_(sizes[0]).matmul(s.reshape_(sizes[1])), (g, p) -> {
 			return g.reshape_(sizes[2]).matmul(p.getRight().reshape_(sizes[1]).t()).reshape_(size());
 		}, (g, p) -> {
@@ -77,7 +76,6 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 	@Override
 	default Size getMappedContext(Size f, Size s) {
 		Size size = MultiplicationRules.getBroadcast(f, s);
-		System.out.println("MAPPED SIZE:" + size);
 		return size;
 	}
 
