@@ -68,18 +68,13 @@
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-native-cpu</artifactId>
             <classifier>osx-x86_64</classifier>
-            <version>1.5.0</version>
+            <version>1.8.1</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-engine</artifactId>
-            <version>0.7.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-engine</artifactId>
-            <version>0.6.0</version>
+            <version>0.11.0</version>
         </dependency>
         <dependency>
             <groupId>org.ml4j</groupId>

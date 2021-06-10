@@ -14,9 +14,13 @@
 
 package org.ml4j.tensor.djl;
 
+import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.types.Shape;
+import ai.djl.pytorch.engine.PtNDArray;
+import ai.djl.pytorch.jni.JniUtils;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
@@ -25,6 +29,7 @@ import org.ml4j.tensor.TensorOperations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 
@@ -42,7 +47,41 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	}
 
 	public DJLTensor(float data, Size size, boolean requires_grad, boolean create_graph) {
-		this(() -> new DJLTensorOperationsImpl(DJLTensorFactory.getManager().ones(getShape(size)).mul(data)), size, new ArrayList<>(), requires_grad, create_graph);
+		this(() -> new DJLTensorOperationsImpl(createArray(data, size, requires_grad)), size, new ArrayList<>(), requires_grad, create_graph);
+	}
+
+	private PtNDArray getNDArray() {
+		return (PtNDArray)data().get().getNDArray();
+	}
+
+	@Override
+	public void backward(DJLTensor g, BackwardConfig config) {
+		JniUtils.backward(getNDArray(), g.getNDArray(), false, create_graph);
+		super.backward(g, config);
+	}
+
+	@Override
+	public DJLTensor requires_grad_(boolean requires_grad) {
+		if (requires_grad) {
+			data().get().getNDArray().setRequiresGradient(true);
+		}
+		return super.requires_grad_(requires_grad);
+	}
+
+	private static NDArray createArray(float data, Size size, boolean requires_grad) {
+		NDArray arr = DJLTensorFactory.getManager().ones(getShape(size)).mul(data);
+		if (requires_grad) {
+			arr.setRequiresGradient(true);
+		}
+		return arr;
+	}
+
+	protected Supplier<Optional<DJLTensor>> createNativeGradient() {
+		if (this.requires_grad()) {
+			return () -> Optional.of(new DJLTensor(() -> new DJLTensorOperationsImpl(data().get().getNDArray().getGradient()), size(), new ArrayList<>(), false, create_graph));
+		} else {
+			return () -> Optional.empty();
+		}
 	}
 
 	public static Shape getShape(Size size) {
@@ -55,6 +94,10 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 
 	protected DJLTensor(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
 		super(data, size, children, requires_grad, create_graph);
+		if (requires_grad) {
+			data.get().getNDArray().setRequiresGradient(true);
+		}
+		getGradNode().setNativeGradientSupplier(createNativeGradient());
 	}
 
 

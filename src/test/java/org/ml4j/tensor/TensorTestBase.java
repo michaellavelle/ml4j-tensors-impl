@@ -14,11 +14,18 @@
 
 package org.ml4j.tensor;
 
+import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.types.Shape;
+import ai.djl.pytorch.engine.PtNDArray;
+import ai.djl.pytorch.engine.PtNDManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.tensor.djl.DJLTensor;
+import org.ml4j.tensor.djl.DJLTensorFactory;
+import org.ml4j.tensor.djl.DJLTensorOperations;
 import org.mockito.MockitoAnnotations;
 
 /**
@@ -103,7 +110,6 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
     
     protected abstract D add(D value1, D value2);
     protected abstract D mul(D value1, float value2);
-
 
     @Test
     public void test_hessian_vector() {

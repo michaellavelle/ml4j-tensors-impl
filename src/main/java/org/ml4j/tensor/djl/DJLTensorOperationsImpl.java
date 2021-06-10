@@ -31,7 +31,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         this.ndArray = ndArray;
         this.shape = ndArray.getShape();
         if (requires_grad && ndArray.hasGradient()) {
-            ndArray.attachGradient();
+            ndArray.setRequiresGradient(true);
         }
     }
 
@@ -110,7 +110,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
             throw new IllegalArgumentException();
         }
         if (requires_grad && ndArray.hasGradient()) {
-            ndArray.attachGradient();
+            ndArray.setRequiresGradient(true);
         }
     }
 
@@ -125,6 +125,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     public DJLTensorOperationsImpl(Shape shape, float initialValue) {
         this.ndArray = DJLTensorFactory.getManager().ones(shape).mul(initialValue);
+        this.ndArray.setRequiresGradient(true);
         this.shape = shape;
     }
 
@@ -133,6 +134,9 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     }
 
     public DJLTensorOperations create(NDArray other, boolean requires_grad) {
+        if (requires_grad) {
+            other.setRequiresGradient(true);
+        }
         return new DJLTensorOperationsImpl(other, requires_grad);
     }
 
