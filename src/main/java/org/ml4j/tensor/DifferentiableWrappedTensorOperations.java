@@ -20,6 +20,8 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
+import org.ml4j.tensor.djl.DJLTensor;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -34,6 +36,25 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 	@Override
 	default V view(Size size) {
 		return applyUnaryOperator(v -> v.view(size), (g, v) -> g.view(size()), "view", s -> size);
+	}
+
+	@Override
+	default V norm() {
+		return applyUnaryOperator(t -> t.norm(), (g, v) -> backwardNotYetImplemented(), "norm", s -> new Size());
+	}
+
+	@Override
+	default V sum() {
+		return applyUnaryOperator(t -> t.sum(), (g, v) -> v.mul(g), "sum", s -> new Size());
+	}
+
+	@Override
+	default V mean() {
+		return applyUnaryOperator(t -> t.mean(), (g, v) -> { return v.mul(0).add(1).mul(g).div(v.numel()); }, "mean", s -> new Size());
+	}
+
+	default V backwardNotYetImplemented() {
+		throw new UnsupportedOperationException();
 	}
 
 	default V t() {
@@ -82,6 +103,55 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 	@Override
 	default V bernoulli() {
 		return applyUnaryOperator(D::bernoulli, (g, v) -> g, "gt", s -> s);
+	}
+
+	@Override
+	default int numel() {
+		return size().numel();
+	}
+
+
+	@Override
+	default V columnSums() {
+		throw new UnsupportedOperationException();
+	}
+
+
+	@Override
+	default V normal_(float v1, float v2) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
+	@Override
+	default V fill_(float value) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
+	@Override
+	default int size(int dim) {
+		return size().getDimensions().get(dim);
+	}
+	@Override
+	default Size size() {
+		return context();
+	}
+
+	@Override
+	default V zero_() {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
+	@Override
+	default V view(int... dims) {
+		if (dims.length == 1 && dims[0] == -1) {
+			return applyUnaryOperator(t -> t.view(-1), (g, v) -> g.view(size()), "view", s -> new Size(s.numel()));
+		}
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	default V rowSums() {
+		throw new UnsupportedOperationException();
 	}
 
 	private float sig(float x) {

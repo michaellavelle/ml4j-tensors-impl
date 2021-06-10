@@ -25,7 +25,9 @@ import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
+import org.ml4j.tensor.TensorBase;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +36,9 @@ import java.util.function.Supplier;
 
 
 /**
- * An AutogradValue implementation that supports the operations defined by TensorOperations,
- * and that takes advantage of the fact that the wrapped data also implements TensorOperations
- * by implementing default DifferentiableWrappedTensorOperations methods.
- *
  * @author Michael Lavelle
  */
-public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations, Size> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
+public class DJLTensor extends TensorBase<DJLTensor, DJLTensorOperations> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
 
 	public DJLTensor(Supplier<DJLTensorOperations> data, Size size, boolean requires_grad, boolean create_graph) {
 		this(data, size, new ArrayList<>(), requires_grad, create_graph);
@@ -52,6 +50,11 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 
 	private PtNDArray getNDArray() {
 		return (PtNDArray)data().get().getNDArray();
+	}
+
+	@Override
+	public DJLTensor size_(Size size) {
+		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 	@Override
@@ -100,74 +103,13 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 		getGradNode().setNativeGradientSupplier(createNativeGradient());
 	}
 
-
 	@Override
-	public int numel() {
-		return size().numel();
-	}
-
-	@Override
-	public DJLTensor sum() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor mean() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor norm() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor columnSums() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor rowSums() {
-		throw new UnsupportedOperationException();
+	protected DJLTensor getSub(DJLTensor other, Size size, float scale) {
+		return other;
 	}
 
 	@Override
 	public DJLTensor cloneTensor() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor t() {
-		return applyUnaryOperator((f, s) -> f.t(), 0, (g, p) -> g, "t", f -> f.t());
-	}
-
-	@Override
-	public Size size() {
-		return context();
-	}
-
-	@Override
-	public int size(int dim) {
-		return size().getDimensions().get(dim);
-	}
-	@Override
-	public DJLTensor size_(Size size) {
-		this.context = size;
-		return this;
-	}
-
-	@Override
-	public DJLTensor zero_() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor normal_(float v1, float v2) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public DJLTensor fill_(float value) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -177,13 +119,8 @@ public class DJLTensor extends AutogradValueImpl<DJLTensor, DJLTensorOperations,
 	}
 
 	@Override
-	public DJLTensor view(int... dims) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void close() {
-
+		// No-op for now.
 	}
 
 	@Override
