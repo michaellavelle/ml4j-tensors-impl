@@ -14,10 +14,12 @@
 
 package org.ml4j.tensor.djl;
 
+import ai.djl.engine.EngineException;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.pytorch.engine.PtNDArray;
 import ai.djl.pytorch.jni.JniUtils;
+import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
@@ -59,16 +61,52 @@ public class DJLTensor extends TensorBase<DJLTensor, DJLTensorOperations> implem
 
 	@Override
 	public void backward(DJLTensor g, BackwardConfig config) {
-		JniUtils.backward(getNDArray(), g.getNDArray(), false, create_graph);
+		try {
+			JniUtils.backward(getNDArray(), g.getNDArray(), false, create_graph);
+		} catch (EngineException e) {
+			throw new IllegalStateException(e);
+		}
+
 		super.backward(g, config);
 	}
+
+	@Override
+	public DJLTensor matmul(DJLTensor other) {
+		Size origSize = this.size();
+		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
+		return this.applyBinaryOperator(other, (f, s) -> f.matmul(s), (g, p) -> {
+
+			Size origGSize = sizes[3];
+			DJLTensor r = g.reshape_(sizes[2]).matmul(p.getRight().t());
+			g.reshape_(origGSize);
+			return r;
+		}, (g, p) -> {
+			Size origGSize = sizes[3];
+			Size origLeftSize = origSize;
+			DJLTensor r = g.reshape_(sizes[2]).t().matmul(p.getLeft().reshape_(sizes[0])).t();
+			g.reshape_(origGSize);
+			p.getLeft().reshape_(origLeftSize);
+			return r;
+		}, "matmul", (f, s) -> {
+			Size result =  sizes[3];
+			int[] dims = result.dimensions();
+			int [] firstDims = new int[dims.length- 1];
+			for (int i = 0; i < firstDims.length; i++) {
+				firstDims[i] = dims[i];
+			}
+			return sizes[3];
+		});
+	}
+
 
 	@Override
 	public DJLTensor requires_grad_(boolean requires_grad) {
 		if (requires_grad) {
 			data().get().getNDArray().setRequiresGradient(true);
 		}
-		return super.requires_grad_(requires_grad);
+		super.requires_grad_(requires_grad);
+		getGradNode().setNativeGradientSupplier(createNativeGradient());
+		return this;
 	}
 
 	private static NDArray createArray(float data, Size size, boolean requires_grad) {
@@ -135,12 +173,12 @@ public class DJLTensor extends TensorBase<DJLTensor, DJLTensorOperations> implem
 
 	@Override
 	protected Supplier<DJLTensorOperations> multiplicativeIdentity() {
-		return () -> new DJLTensorOperationsImpl(getShape(size()), 1);
+		return () -> new DJLTensorOperationsImpl(getShape(size()), 1, false);
 	}
 
 	@Override
 	protected Supplier<DJLTensorOperations> additiveIdentity() {
-		return () -> new DJLTensorOperationsImpl(getShape(size()), 0);
+		return () -> new DJLTensorOperationsImpl(getShape(size()), 0, false);
 	}
 
 	@Override

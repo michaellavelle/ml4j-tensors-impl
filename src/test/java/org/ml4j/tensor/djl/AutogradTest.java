@@ -1,5 +1,7 @@
-package org.ml4j.tensor.ml4j;
+package org.ml4j.tensor.djl;
 
+import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
@@ -10,39 +12,48 @@ import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.TensorTestBase;
+import org.ml4j.tensor.ml4j.ML4JTensor;
+import org.ml4j.tensor.ml4j.ML4JTensorOperations;
+import org.ml4j.tensor.ml4j.ML4JTensorOperationsImpl;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
-
-    private static MatrixFactory matrixFactory = new JBlasRowMajorMatrixFactory();
-
-    private static DirectedComponentsContext context = new DirectedComponentsContextImpl(matrixFactory, true);
+public class AutogradTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
 
     @Override
-    protected ML4JTensor createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> createData(value), size, requires_grad, false);
+    protected DJLTensor createGradValue(float value, boolean requires_grad) {
+        return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
     }
 
     @Override
-    protected ML4JTensor createGradValue(float value, boolean requires_grad, Size size) {
-        return new ML4JTensor(context, () -> createData(value, size), size, requires_grad, false);
+    protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
+        return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
     }
 
     @Override
-    protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> value, size, requires_grad, false);
+    protected DJLTensor createGradValue(DJLTensorOperations value, boolean requires_grad) {
+        return new DJLTensor(() -> value, size, requires_grad, false);
+    }
+
+    private Shape getShape(Size size) {
+        long[] dims = new long[size.dimensions().length];
+        int ind = 0;
+        for (int dim : size.dimensions()) {
+            dims[ind] = dim;
+            ind++;
+        }
+        return new Shape(dims);
     }
 
     @Override
-    protected void assertEquals(ML4JTensorOperations value1, ML4JTensorOperations value2) {
-        Matrix m1 = value1.getMatrix();
-        Matrix m2 = value2.getMatrix();
-        Assert.assertEquals(m1.getLength(), m2.getLength());
-        for (int i = 0; i < m1.getLength(); i++) {
-            Assert.assertEquals(m1.get(i), m2.get(i), 0.01f);
+    protected void assertEquals(DJLTensorOperations value1, DJLTensorOperations value2) {
+        NDArray m1 = value1.getNDArray();
+        NDArray m2 = value2.getNDArray();
+        Assert.assertEquals(m1.toFloatArray().length, m2.toFloatArray().length);
+        for (int i = 0; i < m1.toFloatArray().length; i++) {
+            Assert.assertEquals(m1.toFloatArray()[i], m2.toFloatArray()[i], 0.01f);
         }
     }
 
@@ -51,32 +62,40 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
     }
 
     @Override
-    protected ML4JTensorOperations add(ML4JTensorOperations value1, ML4JTensorOperations value2) {
+    protected DJLTensorOperations add(DJLTensorOperations value1, DJLTensorOperations value2) {
         return value1.add(value2);
     }
 
     @Override
-    protected ML4JTensorOperations mul(ML4JTensorOperations value1, float value2) {
+    protected DJLTensorOperations mul(DJLTensorOperations value1, float value2) {
         return value1.mul(value2);
     }
 
 
     @Override
-    protected ML4JTensorOperations createData(float value) {
-        return new ML4JTensorOperationsImpl(context, value, size);
+    protected DJLTensorOperations createData(float value) {
+        float[] data = new float[size.numel()];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = value;
+        }
+        return new DJLTensorOperationsImpl(DJLTensorFactory.getManager().create(data, getShape(size)), getShape(size), false);
     }
 
     @Override
-    protected ML4JTensorOperations createData(float value, Size size) {
-        return new ML4JTensorOperationsImpl(context, value, size);
+    protected DJLTensorOperations createData(float value, Size size) {
+        float[] data = new float[size.numel()];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = value;
+        }
+        return new DJLTensorOperationsImpl(DJLTensorFactory.getManager().create(data, getShape(size)), getShape(size), false);
     }
 
 
-    private ML4JTensor createRandomValue(boolean requires_grad, int... dims) {
+    private DJLTensor createRandomValue(boolean requires_grad, int... dims) {
         return createGradValue((float) Math.random(), requires_grad, new Size(dims));
     }
 
-    private ML4JTensor createOnesValue(boolean requires_grad, int... dims) {
+    private DJLTensor createOnesValue(boolean requires_grad, int... dims) {
         return createGradValue(1, requires_grad, new Size(dims));
     }
 
@@ -97,35 +116,6 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
 
         assertArrayEqual(a.grad().getDataAsFloatArray(), createGradValue(1, false, new Size(2, 2)).mul(2f).getDataAsFloatArray(), 0.0001f);
     }
-
-    @Test
-    public void test_scalartensor_addition2() {
-        var a = createRandomValue(true, 2, 2);
-        //var a = torch.randn(2, 2).requires_grad_(true);
-        var b = createRandomValue(true);
-
-        var c = createRandomValue(true);
-
-
-        var d = a.add(b);
-
-        var e = d.add(c);
-
-        assertTrue(a.requires_grad());
-        assertTrue(b.requires_grad());
-        assertTrue(c.requires_grad());
-        assertTrue(d.requires_grad());
-        assertTrue(e.requires_grad());
-
-
-        e.backward(createOnesValue(false, 2, 2).mul(2f));
-        assertTrue(b.grad().size().dimensions().length == 0);
-        assertTrue(b.grad().numel() == 1);
-        Assert.assertEquals(b.grad().getDataAsFloatArray()[0], 8f, 0.001f);
-
-        assertArrayEqual(a.grad().getDataAsFloatArray(), createGradValue(1, false, new Size(2, 2)).mul(2f).getDataAsFloatArray(), 0.0001f);
-    }
-
 
     @Test
     public void test_scalartensor_addition_second_without_requires_grad() {
@@ -279,12 +269,14 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
 
         c.backward(createOnesValue(false, 2, 2).mul(2f));
 
-        assertTrue(b.grad().size().dimensions().length == 0);
-        assertTrue(b.grad().numel() == 1);
-        Assert.assertEquals(b.grad().getDataAsFloatArray()[0], 8f, 0.001f);
+        assertTrue(b.grad().size().dimensions().length == 2);
+        assertTrue(b.grad().numel() == 4);
+        Assert.assertEquals(b.grad().getDataAsFloatArray()[0], 2f, 0.001f);
 
         assertArrayEqual(a.grad().getDataAsFloatArray(), createOnesValue(false, 2, 2).mul(2f).getDataAsFloatArray(), 0.0001f);
     }
+
+
 
     @Test
     public void test_scalarbroadcast_addition_second_without_requires_grad() {

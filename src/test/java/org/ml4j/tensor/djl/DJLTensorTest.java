@@ -37,12 +37,12 @@ public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations
 
 	@Override
 	protected DJLTensorOperations createData(float value) {
-		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value);
+		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value, false);
 	}
 
 	@Override
 	protected DJLTensorOperations createData(float value, Size size) {
-		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value);
+		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value, false);
 	}
 
 	@Override
@@ -55,6 +55,7 @@ public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations
 			Assert.assertEquals(m1[i], m2[i], 0.01f);
 		}
 	}
+
 
 	@Override
 	protected DJLTensorOperations add(DJLTensorOperations value1, DJLTensorOperations value2) {

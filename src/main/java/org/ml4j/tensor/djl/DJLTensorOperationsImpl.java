@@ -30,7 +30,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     public DJLTensorOperationsImpl(NDArray ndArray, boolean requires_grad) {
         this.ndArray = ndArray;
         this.shape = ndArray.getShape();
-        if (requires_grad && ndArray.hasGradient()) {
+        if (requires_grad) {
             ndArray.setRequiresGradient(true);
         }
     }
@@ -43,7 +43,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         }
         thisSize = size;
         this.shape = getShape(thisSize);
-        this.ndArray.reshape(shape);
+        this.ndArray = this.ndArray.reshape(shape);
         return this;
     }
 
@@ -109,7 +109,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         if (ndArray == null) {
             throw new IllegalArgumentException();
         }
-        if (requires_grad && ndArray.hasGradient()) {
+        if (requires_grad) {
             ndArray.setRequiresGradient(true);
         }
     }
@@ -123,9 +123,11 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         return shape;
     }
 
-    public DJLTensorOperationsImpl(Shape shape, float initialValue) {
+    public DJLTensorOperationsImpl(Shape shape, float initialValue, boolean requires_grad) {
         this.ndArray = DJLTensorFactory.getManager().ones(shape).mul(initialValue);
-        this.ndArray.setRequiresGradient(true);
+        if (requires_grad) {
+            this.ndArray.setRequiresGradient(true);
+        }
         this.shape = shape;
     }
 
@@ -188,8 +190,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     @Override
     public DJLTensorOperations add(DJLTensorOperations other) {
 
-        //System.out.println("Adding1:" + this.size());
-        //System.out.println("Adding2" + other.size());
 
         return applyBinaryOperation(other, (f, s) -> f.add(s));
     }
