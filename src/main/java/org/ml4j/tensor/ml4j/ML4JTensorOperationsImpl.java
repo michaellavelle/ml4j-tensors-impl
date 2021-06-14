@@ -296,6 +296,11 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 		if (this.size.numel() != size.numel()) {
 			throw new IllegalArgumentException("Number of elements do not match");
 		}
+		if (size.dimensions().length != 2) {
+			throw new IllegalArgumentException("");
+		} else {
+			matrix.asEditableMatrix().reshape(size.dimensions()[0], size.dimensions()[1]);
+		}
 		this.size = size;
 		return this;
 	}

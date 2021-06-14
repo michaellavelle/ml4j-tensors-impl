@@ -18,6 +18,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.Value;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 import org.ml4j.tensor.djl.DJLTensor;
@@ -26,7 +27,7 @@ import org.ml4j.tensor.ml4j.ML4JTensor;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 
-public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V>, D extends TensorOperations<D>> extends DifferentiableWrappedArithmeticOperations<V, D, Size>, AutogradValue<V, D, Size>, TensorOperations<V> {
+public interface DifferentiableWrappedTensorOperations<V extends TensorOperations<V> & Value<V, D, Size>, D extends TensorOperations<D>> extends DifferentiableWrappedArithmeticOperations<V, D, Size>, AutogradValue<V, D, Size>, TensorOperations<V> {
 
 	@Override
 	default V relu() {
@@ -78,7 +79,9 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 
 	@Override
 	default V matmul(V other) {
+
 		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
+
 		return this.applyBinaryOperator(other, (f, s) -> f.reshape_(sizes[0]).matmul(s.reshape_(sizes[1])), (g, p) -> {
 			return g.reshape_(sizes[2]).matmul(p.getRight().reshape_(sizes[1]).t()).reshape_(size());
 		}, (g, p) -> {
@@ -119,7 +122,9 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 
 	@Override
 	default V normal_(float v1, float v2) {
-		throw new UnsupportedOperationException("Not yet implemented");
+		// Sun
+		return self();
+		//throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 	@Override
@@ -138,7 +143,9 @@ public interface DifferentiableWrappedTensorOperations<V extends TensorOperation
 
 	@Override
 	default V zero_() {
-		throw new UnsupportedOperationException("Not yet implemented");
+		// Sun
+		return self();
+		//throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 	@Override
