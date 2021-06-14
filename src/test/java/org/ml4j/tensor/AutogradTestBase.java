@@ -1,84 +1,41 @@
-package org.ml4j.tensor.ml4j;
+package org.ml4j.tensor;
 
+import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.Matrix;
-import org.ml4j.MatrixFactory;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
-import org.ml4j.nn.components.DirectedComponentsContext;
-import org.ml4j.nn.components.DirectedComponentsContextImpl;
-import org.ml4j.tensor.TensorTestBase;
+import org.ml4j.tensor.djl.DJLTensor;
+import org.ml4j.tensor.djl.DJLTensorFactory;
+import org.ml4j.tensor.djl.DJLTensorOperations;
+import org.ml4j.tensor.djl.DJLTensorOperationsImpl;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
-
-    private static MatrixFactory matrixFactory = new JBlasRowMajorMatrixFactory();
-
-    private static DirectedComponentsContext context = new DirectedComponentsContextImpl(matrixFactory, true);
+public abstract class AutogradTestBase<V extends DifferentiableWrappedTensorOperations<V, D>, D extends TensorOperations<D>> extends TensorTestBase<V, D> {
 
     @Override
-    protected ML4JTensor createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> createData(value), size, requires_grad, false);
-    }
-
-    @Override
-    protected ML4JTensor createGradValue(float value, boolean requires_grad, Size size) {
-        return new ML4JTensor(context, () -> createData(value, size), size, requires_grad, false);
-    }
-
-    @Override
-    protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> value, size, requires_grad, false);
-    }
-
-    @Override
-    protected void assertEquals(ML4JTensorOperations value1, ML4JTensorOperations value2) {
-        Matrix m1 = value1.getMatrix();
-        Matrix m2 = value2.getMatrix();
-        Assert.assertEquals(m1.getLength(), m2.getLength());
-        for (int i = 0; i < m1.getLength(); i++) {
-            Assert.assertEquals(m1.get(i), m2.get(i), 0.01f);
-        }
-    }
-
-    protected void assertArrayEqual(float[] actual, float[] expected, float delta) {
-        Assert.assertArrayEquals(expected, actual, delta);
-    }
-
-    @Override
-    protected ML4JTensorOperations add(ML4JTensorOperations value1, ML4JTensorOperations value2) {
+    protected D add(D value1, D value2) {
         return value1.add(value2);
     }
 
     @Override
-    protected ML4JTensorOperations mul(ML4JTensorOperations value1, float value2) {
+    protected D mul(D value1, float value2) {
         return value1.mul(value2);
     }
 
+    @Override
+    protected abstract D createData(float value);
 
     @Override
-    protected ML4JTensorOperations createData(float value) {
-        return new ML4JTensorOperationsImpl(context, value, size);
-    }
+    protected abstract D createData(float value, Size size);
 
-    @Override
-    protected ML4JTensorOperations createData(float value, Size size) {
-        return new ML4JTensorOperationsImpl(context, value, size);
-    }
-
-
-    private ML4JTensor createRandomValue(boolean requires_grad, int... dims) {
-        return createGradValue((float) Math.random(), requires_grad, new Size(dims));
-    }
-
-    private ML4JTensor createOnesValue(boolean requires_grad, int... dims) {
-        return createGradValue(1, requires_grad, new Size(dims));
-    }
+    protected abstract V createRandomValue(boolean requires_grad, int... dims);
+    protected abstract V createOnesValue(boolean requires_grad, int... dims);
 
     @Test
     public void test_scalartensor_addition() {
@@ -97,35 +54,6 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
 
         assertArrayEqual(a.grad().getDataAsFloatArray(), createGradValue(1, false, new Size(2, 2)).mul(2f).getDataAsFloatArray(), 0.0001f);
     }
-
-    @Test
-    public void test_scalartensor_addition2() {
-        var a = createRandomValue(true, 2, 2);
-        //var a = torch.randn(2, 2).requires_grad_(true);
-        var b = createRandomValue(true);
-
-        var c = createRandomValue(true);
-
-
-        var d = a.add(b);
-
-        var e = d.add(c);
-
-        assertTrue(a.requires_grad());
-        assertTrue(b.requires_grad());
-        assertTrue(c.requires_grad());
-        assertTrue(d.requires_grad());
-        assertTrue(e.requires_grad());
-
-
-        e.backward(createOnesValue(false, 2, 2).mul(2f));
-        assertTrue(b.grad().size().dimensions().length == 0);
-        assertTrue(b.grad().numel() == 1);
-        Assert.assertEquals(b.grad().getDataAsFloatArray()[0], 8f, 0.001f);
-
-        assertArrayEqual(a.grad().getDataAsFloatArray(), createGradValue(1, false, new Size(2, 2)).mul(2f).getDataAsFloatArray(), 0.0001f);
-    }
-
 
     @Test
     public void test_scalartensor_addition_second_without_requires_grad() {
@@ -227,6 +155,9 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
         assertArrayEqual(a.grad().getDataAsFloatArray(), createOnesValue(false).mul(2f).getDataAsFloatArray(), 0.0001f);
     }
 
+    protected void assertArrayEqual(float[] actual, float[] expected, float delta) {
+        Assert.assertArrayEquals(expected, actual, delta);
+    }
 
     @Test
     public void test_both_scalartensor_addition_first_without_requires_grad() {
@@ -267,7 +198,6 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
         assertArrayEqual(a.grad().getDataAsFloatArray(), createOnesValue(false).mul(2f).getDataAsFloatArray(), 0.0001f);
     }
 
-
     @Test
     public void test_scalarbroadcast_addition() {
         var a = createRandomValue(true, 2, 2);
@@ -285,6 +215,8 @@ public class AutogradTest extends TensorTestBase<ML4JTensor, ML4JTensorOperation
 
         assertArrayEqual(a.grad().getDataAsFloatArray(), createOnesValue(false, 2, 2).mul(2f).getDataAsFloatArray(), 0.0001f);
     }
+
+
 
     @Test
     public void test_scalarbroadcast_addition_second_without_requires_grad() {
