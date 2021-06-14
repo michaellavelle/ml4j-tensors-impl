@@ -14,23 +14,17 @@
 
 package org.ml4j.tensor.ml4j;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.Matrix;
 import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.nn.components.DirectedComponentsContext;
-import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
-import org.ml4j.tensor.TensorBase;
+import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.TensorOperations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 /**
@@ -40,7 +34,7 @@ import java.util.function.Supplier;
  *
  * @author Michael Lavelle
  */
-public class ML4JTensor extends TensorBase<ML4JTensor, ML4JTensorOperations> implements AutogradValue<ML4JTensor, ML4JTensorOperations, Size>, DifferentiableWrappedTensorOperations<ML4JTensor, ML4JTensorOperations>, TensorOperations<ML4JTensor>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensor, ML4JTensorOperations> {
+public class ML4JTensor extends DifferentiableWrappedTensorOperations<ML4JTensor, ML4JTensorOperations> implements AutogradValue<ML4JTensor, ML4JTensorOperations, Size>, TensorOperations<ML4JTensor>, org.ml4j.autograd.DataSupplier<ML4JTensorOperations>, Tensor<ML4JTensor, ML4JTensorOperations> {
 
 	private DirectedComponentsContext context;
 
