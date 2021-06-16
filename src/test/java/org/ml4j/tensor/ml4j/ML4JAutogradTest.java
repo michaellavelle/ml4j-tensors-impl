@@ -1,19 +1,13 @@
 package org.ml4j.tensor.ml4j;
 
 import org.junit.Assert;
-import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
-import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.AutogradTestBase;
-import org.ml4j.tensor.TensorTestBase;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 
 public class ML4JAutogradTest extends AutogradTestBase<ML4JTensor, ML4JTensorOperations> {

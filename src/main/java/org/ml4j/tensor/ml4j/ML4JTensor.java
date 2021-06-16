@@ -19,8 +19,8 @@ import org.ml4j.Matrix;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.nn.components.DirectedComponentsContext;
-import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
+import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
 
 import java.util.ArrayList;
@@ -88,11 +88,6 @@ public class ML4JTensor extends DifferentiableWrappedTensorOperations<ML4JTensor
 			ML4JTensorOperations ops = new ML4JTensorOperationsImpl(context, matrix, s);
 			return new ML4JTensor(context, () -> ops, s, requires_grad(), create_graph);
 		}
-	}
-
-	@Override
-	public ML4JTensor cloneTensor() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

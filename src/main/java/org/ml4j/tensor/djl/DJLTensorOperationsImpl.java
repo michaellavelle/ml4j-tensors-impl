@@ -1,12 +1,16 @@
 package org.ml4j.tensor.djl;
 
 import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.index.NDIndex;
+import ai.djl.ndarray.internal.NDArrayEx;
+import ai.djl.ndarray.types.DataType;
 import ai.djl.ndarray.types.Shape;
 import org.jvmpy.symbolictensors.Operation;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.TensorOperations;
-import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
@@ -75,7 +79,8 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations normal_(float v1, float v2) {
-        throw new UnsupportedOperationException();
+        this.ndArray = DJLTensorFactory.getManager().randomNormal(v1, v2, getShape(size()), DataType.FLOAT32);
+        return this;
     }
 
     @Override
@@ -213,7 +218,12 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations relu() {
-        return applyUnaryOperation(n -> n.gt(DJLTensorFactory.getManager().zeros(getNDArray().getShape())).mul(getNDArray()));
+        return applyUnaryOperation(n -> extend(n).relu());
+    }
+
+
+    private NDArrayEx extend(NDArray array) {
+        return array.getNDArrayInternal();
     }
 
     @Override
@@ -223,7 +233,17 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations sigmoid() {
-        throw new UnsupportedOperationException();
+        return applyUnaryOperation(n -> extend(n).sigmoid());
+    }
+
+    @Override
+    public DJLTensorOperations exp() {
+        return applyUnaryOperation(n -> n.exp());
+    }
+
+    @Override
+    public DJLTensorOperations log() {
+        return applyUnaryOperation(n -> n.log());
     }
 
     @Override
@@ -239,15 +259,58 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations add_(DJLTensorOperations other) {
+        if (other.size().dimensions().length == 1 && (size().dimensions()[1] == 1 || size().dimensions()[0] == 1)) {
+            other.reshape_(size());
+        }
+        if (size().dimensions().length == 1 && (other.size().dimensions()[1] == 1 || other.size().dimensions()[0] == 1)) {
+            reshape_(other.size());
+        }
         getNDArray().addi(other.getNDArray());
         return this;
     }
 
     @Override
+    public DJLTensorOperations div_(DJLTensorOperations other) {
+        getNDArray().divi(other.getNDArray());
+        return this;
+    }
+
+    @Override
+    public DJLTensorOperations mul_(float v) {
+        getNDArray().muli(v);
+        return this;
+    }
+
+    @Override
+    public DJLTensorOperations add_(float v) {
+        getNDArray().addi(v);
+        return this;
+    }
+
+    @Override
+    public DJLTensorOperations div_(float v) {
+        getNDArray().divi(v);
+        return this;
+    }
+
+    @Override
+    public DJLTensorOperations sub_(float v) {
+        getNDArray().subi(v);
+        return this;
+    }
+
+    @Override
     public DJLTensorOperations sub_(DJLTensorOperations other) {
+        if (other.size().dimensions().length == 1 && (size().dimensions()[1] == 1 || size().dimensions()[0] == 1)) {
+            other.reshape_(size());
+        }
+        if (size().dimensions().length == 1 && (other.size().dimensions()[1] == 1 || other.size().dimensions()[0] == 1)) {
+            reshape_(other.size());
+        }
         getNDArray().subi(other.getNDArray());
         return this;
     }
+
 
     @Override
     public DJLTensorOperations neg() {
@@ -270,8 +333,96 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     }
 
     @Override
-    public DJLTensorOperations sum() {
-        throw new UnsupportedOperationException();
+    public DJLTensorOperations sum(int...axes) {
+        return create(getNDArray().sum(axes), false);
+    }
+
+    @Override
+    public float get(int index) {
+        return ndArray.getFloat(getIndexes(size(), index));
+    }
+
+    @Override
+    public float get(int... indexes) {
+        long[] inds = new long[indexes.length];
+        for (int i = 0; i < indexes.length; i++) {
+            inds[i] = indexes[i];
+        }
+        return ndArray.getFloat(inds);
+    }
+
+    @Override
+    public DJLTensorOperations getTensor(int... indexes) {
+        List<String> inds = new ArrayList<>();
+        for (int i = 0; i < indexes.length; i++) {
+            inds.add(indexes[i] == -1 ? ":" : (indexes[i] + ""));
+        }
+        String r = inds.toString().replace("[","").replace("]", "");
+        System.out.println("Get" + "*" + r + "*");
+        System.out.println(getNDArray().getShape());
+        if (indexes.length == 2 && getNDArray().getShape().getShape().length == 1) {
+            return create(getNDArray().reshape(1, getShape().getShape()[0]).get(new NDIndex(r)), false);
+        } else {
+            return create(getNDArray().get(new NDIndex(r)), false);
+        }
+    }
+
+    @Override
+    public void putTensor(DJLTensorOperations tensor, int... indexes) {
+        List<String> inds = new ArrayList<>();
+        for (int i = 0; i < indexes.length; i++) {
+            inds.add(indexes[i] == -1 ? ":" : (indexes[i] + ""));
+        }
+        String r = inds.toString().replace("[","").replace("]", "");
+        System.out.println("Put:" + r);
+        getNDArray().set(new NDIndex(r), tensor.getNDArray());
+    }
+
+    @Override
+    public DJLTensorOperations argMax() {
+        return create(getNDArray().argMax(), false);
+    }
+
+    @Override
+    public DJLTensorOperations argMax(int i) {
+        return create(getNDArray().argMax(i), false);
+    }
+
+    private static long[] getIndexes(Size size, int index) {
+        if (size.dimensions().length < 2) {
+            return new long[] {index};
+        } else if (size.dimensions().length == 2) {
+            int r = index / size.dimensions()[1];
+            return new long[] {r, index - r * size.dimensions()[1]};
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static int getProduct(Size size, int startDim) {
+        int product = 1;
+        for (int i = startDim; i < size.dimensions().length; i++) {
+            product = product * size.dimensions()[i];
+        }
+        return product;
+    }
+    
+    
+
+    @Override
+    public void put(int index, float value) {
+        NDIndex ind = new NDIndex(getIndexes(size(), index));
+        ndArray.set(ind, value);
+    }
+
+    @Override
+    public void put(float value, int...indexes) {
+        long[] inds = new long[indexes.length];
+        for (int i = 0; i < indexes.length; i++) {
+            inds[i] = indexes[i];
+        }
+        NDIndex ind = new NDIndex(inds);
+        ndArray.set(ind, value);
     }
 
     @Override
@@ -286,7 +437,8 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations mul_(DJLTensorOperations other) {
-        throw new UnsupportedOperationException();
+        getNDArray().muli(other.getNDArray());
+        return this;
     }
 
     @Override

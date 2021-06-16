@@ -1,32 +1,15 @@
 package org.ml4j.tensor;
 
-import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorFactory;
-import org.ml4j.tensor.djl.DJLTensorOperations;
-import org.ml4j.tensor.djl.DJLTensorOperationsImpl;
-import org.ml4j.tensor.ml4j.ML4JTensor;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public abstract class AutogradTestBase<V extends DifferentiableWrappedTensorOperations<V, D>, D extends TensorOperations<D>> extends TensorTestBase<V, D> {
-
-    @Override
-    protected D add(D value1, D value2) {
-        return value1.add(value2);
-    }
-
-    @Override
-    protected D mul(D value1, float value2) {
-        return value1.mul(value2);
-    }
+public abstract class AutogradTestBase<V extends DifferentiableWrappedTensorOperations<V, D>, D extends TensorOperations<D>> extends TestBase<V, D> {
 
     @Override
     protected abstract D createData(float value);

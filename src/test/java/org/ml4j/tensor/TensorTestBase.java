@@ -14,18 +14,11 @@
 
 package org.ml4j.tensor;
 
-import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.types.Shape;
-import ai.djl.pytorch.engine.PtNDArray;
-import ai.djl.pytorch.engine.PtNDManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorFactory;
-import org.ml4j.tensor.djl.DJLTensorOperations;
 import org.mockito.MockitoAnnotations;
 
 /**
@@ -34,41 +27,7 @@ import org.mockito.MockitoAnnotations;
  * @author Michael Lavelle
  *
  */
-public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
-
-    protected Size size;
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        size = new Size(2, 2);
-    }
-
-    protected abstract T createGradValue(float value, boolean requires_grad);
-   
-    protected abstract T createGradValue(D value, boolean requires_grad);
-
-    
-    protected abstract D createData(float value);
-
-    protected abstract D createData(float value, Size size);
-
-
-    protected abstract T createGradValue(float value, boolean requires_grad, Size size);
-
-    @Test
-    public void testMatMul() {
-        var left = createGradValue(-1, true, new Size(new Size(2, 128), new Size(512))).name_("a");
-        var right = createGradValue(1, true, new Size(512, 65)).name_("a");
-
-        var result = left.matmul(right);
-
-        result.backward();
-
-        Assert.assertNotNull(left.grad());
-        Assert.assertNotNull(right.grad());
-    }
-
+public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase<T, D> {
 
     @Test
     public void test_example() {
@@ -105,11 +64,6 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
 
         assertEquals(createData(645.58f), b.grad().data().get());
     }
-    
-    protected abstract void assertEquals(D value1, D value2);
-    
-    protected abstract D add(D value1, D value2);
-    protected abstract D mul(D value1, float value2);
 
     @Test
     public void test_hessian_vector() {
@@ -155,11 +109,44 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
         Assert.assertArrayEquals(y.grad().getDataAsFloatArray(), y_grad.add(createGradValue(y_hv, false)).getDataAsFloatArray(), 0.001f);
     }
 
-    private T one() {
-        return createGradValue(1, false);
+    @Test
+    public void test_sum() {
+
+        var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+        var c = a.sum();
+
+        assertEquals(createData(-16f, new Size()), c.data().get());
+
+        c.backward();
+
+        assertEquals(createData(1, new Size(2, 2)), a.grad().data().get());
+
     }
 
-    private T ten() {
-        return createGradValue(10, false);
+    @Test
+    public void test_get_row() {
+
+        var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+        System.out.println(a);
+
+        var c = a.getTensor(-1, 0);
+
+        System.out.println(c.size());
+
+    }
+
+    @Test
+    public void testMatMul() {
+        var left = createGradValue(-1, true, new Size(new Size(2, 128), new Size(512))).name_("a");
+        var right = createGradValue(1, true, new Size(512, 65)).name_("a");
+
+        var result = left.matmul(right);
+
+        result.backward();
+
+        Assert.assertNotNull(left.grad());
+        Assert.assertNotNull(right.grad());
     }
 }

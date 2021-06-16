@@ -24,8 +24,8 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.Node;
-import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
+import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
 
 import java.util.ArrayList;
@@ -140,11 +140,6 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 	@Override
 	protected DJLTensor getSub(DJLTensor other, Size size, float scale) {
 		return other;
-	}
-
-	@Override
-	public DJLTensor cloneTensor() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -18,26 +18,27 @@ import org.jvmpy.symbolictensors.Size;
 import org.jvmpy.symbolictensors.TensorDataContainer;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 
-public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, TensorOperationsMinimal<T>, ArithmeticOperations<T> {
-
-    //T mul(float value);
-
-    //T add(float value);
-
-    //T sub(float value);
-
-
-    //T mul(T other);
-
-    //T div(T other);
-
-    //T sub(T other);
+public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, java.util.function.Supplier<T>, ArithmeticOperations<T> {
 
     int numel();
 
-    T sum();
+    T sum(int... dims);
 
-    //T add(T other);
+    float get(int index);
+
+    float get(int...indexes);
+
+    T getTensor(int...indexes);
+
+    void putTensor(T tensor, int...indexes);
+
+    T argMax(int axis);
+
+    T argMax();
+
+    void put(int index, float value);
+
+    void put(float value, int...indexes);
 
     T mean();
 
@@ -45,16 +46,21 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, T
 
     T mul_(T other);
 
+    T add_(float v);
+
+    T div_(float v);
+
+    T sub_(float v);
+
+    T div_(T other);
+
+    T mul_(float v);
+
     T columnSums();
 
     T rowSums();
 
     T cloneTensor();
-
-
-    //T sub_(T other);
-
-    //T add_(T other);
 
     T matmul(T other);
 
@@ -72,18 +78,21 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, T
 
     T fill_(float value);
 
-
     T view(Size size);
 
     T reshape_(Size size);
 
     T view(int... dims);
 
-    void close();
-
     T relu();
 
     T bernoulli();
 
     T sigmoid();
+
+    T exp();
+
+    T log();
+
+    void close();
 }

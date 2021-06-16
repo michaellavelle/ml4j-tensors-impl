@@ -140,6 +140,35 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 				m -> m.muliRowVector(other.getMatrix()), m -> m.muli(other.getMatrix()));
 	}
 
+
+	@Override
+	public ML4JTensorOperations mul_(float v) {
+		// TODO
+		matrix = matrix.mul(v);
+		return this;
+	}
+
+	@Override
+	public ML4JTensorOperations add_(float v) {
+		// TODO
+		matrix = matrix.add(v);
+		return this;
+	}
+
+	@Override
+	public ML4JTensorOperations div_(float v) {
+		// TODO
+		matrix = matrix.div(v);
+		return this;
+	}
+
+	@Override
+	public ML4JTensorOperations sub_(float v) {
+		// TODO
+		matrix = matrix.sub(v);
+		return this;
+	}
+
 	@Override
 	public ML4JTensorOperations fill_(float value) {
 		throw new UnsupportedOperationException();
@@ -159,6 +188,12 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	public ML4JTensorOperations add_(ML4JTensorOperations other) {
 		return apply_(other, m -> m.addiColumnVector(other.getMatrix()),
 				m -> m.addiRowVector(other.getMatrix()), m -> m.addi(other.getMatrix()));
+	}
+
+	@Override
+	public ML4JTensorOperations div_(ML4JTensorOperations other) {
+		return apply_(other, m -> m.diviColumnVector(other.getMatrix()),
+				m -> m.diviRowVector(other.getMatrix()), m -> m.divi(other.getMatrix()));
 	}
 	
 	private ML4JTensorOperations apply_(ML4JTensorOperations other, Consumer<EditableMatrix> columnVectorOp,
@@ -375,8 +410,59 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	}
 	
 	@Override
-	public ML4JTensorOperations sum() {
+	public ML4JTensorOperations sum(int... dims) {
+		if (dims.length > 0) {
+			throw new UnsupportedOperationException();
+		}
 		return toML4JTensorOperations(matrixFactory.createOnes(1, 1).mul(matrix.sum()), new Size(1, 1));
+	}
+
+	@Override
+	public float get(int index) {
+		return matrix.get(index);
+	}
+
+	@Override
+	public float get(int... indexes) {
+		if (indexes.length != 2) {
+			throw new UnsupportedOperationException();
+		} else {
+			return matrix.asEditableMatrix().get(indexes[0], indexes[1]);
+		}
+	}
+
+	@Override
+	public ML4JTensorOperations getTensor(int... indexes) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void putTensor(ML4JTensorOperations tensor, int... indexes) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ML4JTensorOperations argMax(int axis) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ML4JTensorOperations argMax() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void put(int index, float value) {
+		matrix.asEditableMatrix().put(index, value);
+	}
+
+	@Override
+	public void put(float value, int... indexes) {
+		if (indexes.length != 2) {
+			throw new UnsupportedOperationException();
+		} else {
+			matrix.asEditableMatrix().put(indexes[0], indexes[1], value);
+		}
 	}
 
 	@Override
@@ -469,6 +555,16 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	@Override
 	public ML4JTensorOperations sigmoid() {
 		return toML4JTensorOperations(matrix.sigmoid(), size());
+	}
+
+	@Override
+	public ML4JTensorOperations exp() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ML4JTensorOperations log() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

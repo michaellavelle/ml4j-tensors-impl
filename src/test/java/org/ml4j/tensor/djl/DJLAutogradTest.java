@@ -3,22 +3,8 @@ package org.ml4j.tensor.djl;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
-import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.Matrix;
-import org.ml4j.MatrixFactory;
-import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
-import org.ml4j.nn.components.DirectedComponentsContext;
-import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.AutogradTestBase;
-import org.ml4j.tensor.TensorTestBase;
-import org.ml4j.tensor.ml4j.ML4JTensor;
-import org.ml4j.tensor.ml4j.ML4JTensorOperations;
-import org.ml4j.tensor.ml4j.ML4JTensorOperationsImpl;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 
 public class DJLAutogradTest extends AutogradTestBase<DJLTensor, DJLTensorOperations> {
