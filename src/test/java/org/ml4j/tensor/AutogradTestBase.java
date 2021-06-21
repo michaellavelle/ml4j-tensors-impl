@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.tensor.djl.DJLTensor;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -185,7 +187,10 @@ public abstract class AutogradTestBase<V extends DifferentiableWrappedTensorOper
     public void test_scalarbroadcast_addition() {
         var a = createRandomValue(true, 2, 2);
         var b = createRandomValue(true);
+
+
         var c = a.add(b);
+
 
         assertTrue(a.requires_grad());
         assertTrue(b.requires_grad());

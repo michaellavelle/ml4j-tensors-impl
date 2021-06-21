@@ -194,8 +194,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations add(DJLTensorOperations other) {
-
-
         return applyBinaryOperation(other, (f, s) -> f.add(s));
     }
 
@@ -358,7 +356,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
             inds.add(indexes[i] == -1 ? ":" : (indexes[i] + ""));
         }
         String r = inds.toString().replace("[","").replace("]", "");
-        System.out.println("Get" + "*" + r + "*");
         System.out.println(getNDArray().getShape());
         if (indexes.length == 2 && getNDArray().getShape().getShape().length == 1) {
             return create(getNDArray().reshape(1, getShape().getShape()[0]).get(new NDIndex(r)), false);
@@ -542,4 +539,5 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     public DJLTensorOperations get() {
         return this;
     }
+
 }

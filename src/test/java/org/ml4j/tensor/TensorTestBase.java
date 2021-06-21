@@ -129,12 +129,9 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase
 
         var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
 
-        System.out.println(a);
-
         var c = a.getTensor(-1, 0);
 
-        System.out.println(c.size());
-
+        assertEquals(createData(-4, new Size(2, 1)), c.data().get());
     }
 
     @Test

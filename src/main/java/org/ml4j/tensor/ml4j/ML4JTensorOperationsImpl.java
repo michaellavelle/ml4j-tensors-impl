@@ -1,5 +1,6 @@
 package org.ml4j.tensor.ml4j;
 
+import ai.djl.ndarray.index.NDIndex;
 import org.jvmpy.symbolictensors.Operatable;
 import org.jvmpy.symbolictensors.Operation;
 import org.jvmpy.symbolictensors.Size;
@@ -433,7 +434,20 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 
 	@Override
 	public ML4JTensorOperations getTensor(int... indexes) {
-		throw new UnsupportedOperationException();
+		if (indexes.length != 2) {
+			throw new IllegalArgumentException();
+		} else {
+			if (indexes[0] != -1 && indexes[1] != -1) {
+				return new ML4JTensorOperationsImpl(directedComponentsContext, get(indexes[0], indexes[1]), new Size());
+			} else if (indexes[0] == -1) {
+				return new ML4JTensorOperationsImpl(directedComponentsContext, getMatrix().getColumn(indexes[1]), new Size(getMatrix().getRows(), 1));
+			} else if (indexes[1] == -1) {
+				return new ML4JTensorOperationsImpl(directedComponentsContext, getMatrix().getRow(indexes[0]), new Size(1, getMatrix().getColumns()));
+			} else {
+				throw new IllegalArgumentException();
+			}
+		}
+
 	}
 
 	@Override

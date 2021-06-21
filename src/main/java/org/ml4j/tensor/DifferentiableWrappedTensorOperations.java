@@ -23,8 +23,7 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
 
     @Override
     public V add(V other) {
-        Size broadcast = MultiplicationRules.getBroadcast(size(), other.size());
-        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add:" + size() + ":" + other.context(), (f, s) -> broadcast);
+        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add:" + size() + ":" + other.context(), (f, s) -> getMappedContext(f, s));
     }
 
     @Override

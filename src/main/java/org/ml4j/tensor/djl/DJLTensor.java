@@ -21,12 +21,16 @@ import ai.djl.pytorch.engine.PtNDArray;
 import ai.djl.pytorch.jni.JniUtils;
 import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.Matrix;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.Node;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.ml4j.ML4JTensor;
+import org.ml4j.tensor.ml4j.ML4JTensorOperations;
+import org.ml4j.tensor.ml4j.ML4JTensorOperationsImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +56,8 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 
 	@Override
 	public DJLTensor size_(Size size) {
-		throw new UnsupportedOperationException("Not yet implemented");
+		this.context = size;
+		return self();
 	}
 
 	@Override
@@ -71,7 +76,6 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 		Size origSize = this.size();
 		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
 		return this.applyBinaryOperator(other, (f, s) -> f.matmul(s), (g, p) -> {
-
 			Size origGSize = sizes[3];
 			DJLTensor r = g.reshape_(sizes[2]).matmul(p.getRight().t());
 			g.reshape_(origGSize);
@@ -93,7 +97,6 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 			return sizes[3];
 		});
 	}
-
 
 	@Override
 	public DJLTensor requires_grad_(boolean requires_grad) {
@@ -139,7 +142,41 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 
 	@Override
 	protected DJLTensor getSub(DJLTensor other, Size size, float scale) {
-		return other;
+		if (scale == 1) {
+			return other;
+		} else {
+			boolean scalar = size.dimensions().length == 0;
+			int div = (int) Math.sqrt(scale);
+			int[] dims = other.size().dimensions();
+			int prod = 1;
+			int[] newDims = new int[dims.length];
+			for (int i = 0; i < newDims.length; i++) {
+				newDims[i] = dims[i] /div;
+				prod = prod * newDims[i];
+			}
+			float[] oldData = other.getDataAsFloatArray();
+			float[] data = new float[prod];
+			int ind = 0;
+			int newInd = 0;
+			for (int i = 0; i < dims.length; i++) {
+				for (int j = 0; j < dims[i]; j++) {
+					if (j < newDims[i]) {
+						if (newInd < data.length && ind < oldData.length) {
+							data[newInd] = oldData[ind];
+						}
+						newInd++;
+
+					}
+					ind++;
+				}
+			}
+
+			NDArray matrixOld = other.data().get().getNDArray();
+			Size s = scalar ? new Size() : new Size(newDims);
+			NDArray matrix = DJLTensorFactory.getManager().create(data, getShape(s));
+			DJLTensorOperations ops = new DJLTensorOperationsImpl(matrix);
+			return new DJLTensor(() -> ops, s, requires_grad(), create_graph);
+		}
 	}
 
 	@Override

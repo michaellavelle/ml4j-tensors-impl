@@ -28,15 +28,11 @@ public class TensorMatrix<T extends Tensor<T, ?>> implements Matrix, EditableMat
 
     @Override
     public void putRow(int i, Matrix matrix) {
-        System.out.println("Putting row:" + i + " in " + tensor.size());
-
         tensor.putTensor(extract(matrix), i, -1);
     }
 
     @Override
     public void putColumn(int i, Matrix matrix) {
-        System.out.println("Putting column:" + i + " in " + tensor.size());
-
         tensor.putTensor(extract(matrix), -1, i);
     }
 
@@ -186,7 +182,6 @@ public class TensorMatrix<T extends Tensor<T, ?>> implements Matrix, EditableMat
     @Override
     public Matrix getRow(int i) {
         Matrix mat =  create(tensor.getTensor(i, -1));
-
         return mat;
     }
 
