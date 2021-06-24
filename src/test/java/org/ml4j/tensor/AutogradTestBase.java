@@ -11,7 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public abstract class AutogradTestBase<V extends DifferentiableWrappedTensorOperations<V, D>, D extends TensorOperations<D>> extends TestBase<V, D> {
+public abstract class AutogradTestBase<V extends Tensor<V, D>, D extends TensorOperations<D>> extends TestBase<V, D> {
 
     protected abstract boolean isNativeGradientSupported();
 
