@@ -27,6 +27,11 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
     }
 
     @Override
+    public boolean isNativeGradient() {
+        return data().get().isNativeGradient();
+    }
+
+    @Override
     public V applyBinaryOperator(V other, BinaryOperator<D> forward, BiFunction<V, Pair<V, V>, V> backThis, BiFunction<V, Pair<V, V>, V> backOther, String op, BinaryOperator<Size> contextMapper) {
         if (!size().getDimensions().equals(other.size().getDimensions())) {
             try {

@@ -95,4 +95,6 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, j
     T log();
 
     void close();
+    
+    boolean isNativeGradient();
 }

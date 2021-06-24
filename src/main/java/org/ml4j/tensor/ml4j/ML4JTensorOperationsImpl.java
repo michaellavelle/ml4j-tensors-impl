@@ -551,6 +551,11 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	}
 
 	@Override
+	public boolean isNativeGradient() {
+		return false;
+	}
+
+	@Override
 	public ML4JTensorOperations relu() {
 		EditableMatrix r = matrix.dup().asEditableMatrix();
 		for (int i = 0; i < r.getLength(); i++) {

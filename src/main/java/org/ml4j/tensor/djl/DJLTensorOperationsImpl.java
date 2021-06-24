@@ -20,10 +20,19 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     private NDArray ndArray;
     protected Shape shape;
+    protected boolean nativeGradient;
 
     protected DJLTensorOperationsImpl(NDArray a) {
         this.ndArray = a;
         this.shape = a.getShape();
+    }
+
+    public void setNativeGradient(boolean nativeGradient) {
+        this.nativeGradient = nativeGradient;
+    }
+
+    public boolean isNativeGradient() {
+        return nativeGradient;
     }
 
     protected DJLTensorOperationsImpl(Shape a) {

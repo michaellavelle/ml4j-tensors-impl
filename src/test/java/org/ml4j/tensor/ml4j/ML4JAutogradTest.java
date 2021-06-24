@@ -55,6 +55,15 @@ public class ML4JAutogradTest extends AutogradTestBase<ML4JTensor, ML4JTensorOpe
         return value1.mul(value2);
     }
 
+    @Override
+    protected boolean isNativeGradientSupported() {
+        return false;
+    }
+
+    @Override
+    protected boolean isNativeGradientExpected() {
+        return false;
+    }
 
     @Override
     protected ML4JTensorOperations createData(float value) {

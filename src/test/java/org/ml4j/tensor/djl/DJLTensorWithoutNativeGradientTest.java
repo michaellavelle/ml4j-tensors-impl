@@ -18,7 +18,7 @@ import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.TensorTestBase;
 
-public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
+public class DJLTensorWithoutNativeGradientTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
 
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad) {
@@ -74,6 +74,6 @@ public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations
 
 	@Override
 	protected boolean isNativeGradientExpected() {
-		return true;
+		return false;
 	}
 }

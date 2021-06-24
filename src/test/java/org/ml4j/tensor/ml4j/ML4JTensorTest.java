@@ -74,4 +74,13 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 		return value1.mul(value2);
 	}
 
+	@Override
+	protected boolean isNativeGradientSupported() {
+		return false;
+	}
+
+	@Override
+	protected boolean isNativeGradientExpected() {
+		return false;
+	}
 }

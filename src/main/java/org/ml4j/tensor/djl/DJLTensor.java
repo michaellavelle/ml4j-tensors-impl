@@ -63,7 +63,7 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 	@Override
 	public void backward(DJLTensor g, BackwardConfig config) {
 		try {
-			JniUtils.backward(getNDArray(), g.getNDArray(), false, create_graph);
+			JniUtils.backward(getNDArray(), g.getNDArray(), false, config.keep_graph());
 		} catch (EngineException e) {
 			throw new IllegalStateException(e);
 		}
@@ -118,7 +118,7 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 
 	protected Supplier<Optional<DJLTensor>> createNativeGradient() {
 		if (this.requires_grad()) {
-			return () -> Optional.of(new DJLTensor(() -> new DJLTensorOperationsImpl(data().get().getNDArray().getGradient()), size(), new ArrayList<>(), false, create_graph));
+			return () -> {NDArray grad = data().get().getNDArray().getGradient(); return grad.sum().getFloat() == 0 ? Optional.empty() : Optional.of(new DJLTensor(() -> {DJLTensorOperationsImpl data = new DJLTensorOperationsImpl(grad); data.setNativeGradient(true); return data;}, size(), new ArrayList<>(), false, create_graph)); };
 		} else {
 			return () -> Optional.empty();
 		}
@@ -134,9 +134,7 @@ public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, 
 
 	protected DJLTensor(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
 		super(data, size, children, requires_grad, create_graph);
-		if (requires_grad) {
-			data.get().getNDArray().setRequiresGradient(true);
-		}
+		requires_grad_(requires_grad);
 		getGradNode().setNativeGradientSupplier(createNativeGradient());
 	}
 

@@ -23,4 +23,5 @@ import org.ml4j.autograd.DataSupplier;
  * @author Michael Lavelle
  */
 public interface Tensor<T extends Tensor<T, D>, D> extends AutogradValue<T, D, Size>, TensorOperations<T>, DataSupplier<D> {
+    boolean isNativeGradient();
 }
