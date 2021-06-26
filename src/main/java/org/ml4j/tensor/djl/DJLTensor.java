@@ -14,201 +14,21 @@
 
 package org.ml4j.tensor.djl;
 
-import ai.djl.engine.EngineException;
 import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.types.Shape;
 import ai.djl.pytorch.engine.PtNDArray;
-import ai.djl.pytorch.jni.JniUtils;
-import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.Matrix;
 import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.autograd.node.Node;
-import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
-import org.ml4j.tensor.ml4j.ML4JTensor;
 import org.ml4j.tensor.ml4j.ML4JTensorOperations;
-import org.ml4j.tensor.ml4j.ML4JTensorOperationsImpl;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
+ * An AutogradValue implementation that supports the operations defined by TensorOperations,
+ * and that takes advantage of the fact that the wrapped data also implements TensorOperations
+ * by implementing default DifferentiableWrappedTensorOperations methods.
+ *
  * @author Michael Lavelle
  */
-public class DJLTensor extends DifferentiableWrappedTensorOperations<DJLTensor, DJLTensorOperations> implements AutogradValue<DJLTensor, DJLTensorOperations, Size>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
-
-	public DJLTensor(Supplier<DJLTensorOperations> data, Size size, boolean requires_grad, boolean create_graph) {
-		this(data, size, new ArrayList<>(), requires_grad, create_graph);
-	}
-
-	public DJLTensor(float data, Size size, boolean requires_grad, boolean create_graph) {
-		this(() -> new DJLTensorOperationsImpl(createArray(data, size, requires_grad)), size, new ArrayList<>(), requires_grad, create_graph);
-	}
-
-	private PtNDArray getNDArray() {
-		return (PtNDArray)data().get().getNDArray();
-	}
-
-	@Override
-	public DJLTensor size_(Size size) {
-		this.context = size;
-		return self();
-	}
-
-	@Override
-	public void backward(DJLTensor g, BackwardConfig config) {
-		try {
-			JniUtils.backward(getNDArray(), g.getNDArray(), false, config.keep_graph());
-		} catch (EngineException e) {
-			throw new IllegalStateException(e);
-		}
-
-		super.backward(g, config);
-	}
-
-	@Override
-	public DJLTensor matmul(DJLTensor other) {
-		Size origSize = this.size();
-		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
-		return this.applyBinaryOperator(other, (f, s) -> f.matmul(s), (g, p) -> {
-			Size origGSize = sizes[3];
-			DJLTensor r = g.reshape_(sizes[2]).matmul(p.getRight().t());
-			g.reshape_(origGSize);
-			return r;
-		}, (g, p) -> {
-			Size origGSize = sizes[3];
-			Size origLeftSize = origSize;
-			DJLTensor r = g.reshape_(sizes[2]).t().matmul(p.getLeft().reshape_(sizes[0])).t();
-			g.reshape_(origGSize);
-			p.getLeft().reshape_(origLeftSize);
-			return r;
-		}, "matmul", (f, s) -> {
-			Size result =  sizes[3];
-			int[] dims = result.dimensions();
-			int [] firstDims = new int[dims.length- 1];
-			for (int i = 0; i < firstDims.length; i++) {
-				firstDims[i] = dims[i];
-			}
-			return sizes[3];
-		});
-	}
-
-	@Override
-	public DJLTensor requires_grad_(boolean requires_grad) {
-		if (requires_grad) {
-			data().get().getNDArray().setRequiresGradient(true);
-		}
-		super.requires_grad_(requires_grad);
-		getGradNode().setNativeGradientSupplier(createNativeGradient());
-		return this;
-	}
-
-	private static NDArray createArray(float data, Size size, boolean requires_grad) {
-		NDArray arr = DJLTensorFactory.getManager().ones(getShape(size)).mul(data);
-		if (requires_grad) {
-			arr.setRequiresGradient(true);
-		}
-		return arr;
-	}
-
-	protected Supplier<Optional<DJLTensor>> createNativeGradient() {
-		if (this.requires_grad()) {
-			return () -> {NDArray grad = data().get().getNDArray().getGradient(); return grad.sum().getFloat() == 0 ? Optional.empty() : Optional.of(new DJLTensor(() -> {DJLTensorOperationsImpl data = new DJLTensorOperationsImpl(grad); data.setNativeGradient(true); return data;}, size(), new ArrayList<>(), false, create_graph)); };
-		} else {
-			return () -> Optional.empty();
-		}
-	}
-
-	public static Shape getShape(Size size) {
-		long[] s = new long[size.getDimensions().size()];
-		for (int i = 0; i < s.length; i++) {
-			s[i] = size.getDimensions().get(i);
-		}
-		return new Shape(s);
-	}
-
-	protected DJLTensor(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-		super(data, size, children, requires_grad, create_graph);
-		requires_grad_(requires_grad);
-		getGradNode().setNativeGradientSupplier(createNativeGradient());
-	}
-
-	@Override
-	protected DJLTensor getSub(DJLTensor other, Size size, float scale) {
-		if (scale == 1) {
-			return other;
-		} else {
-			boolean scalar = size.dimensions().length == 0;
-			int div = (int) Math.sqrt(scale);
-			int[] dims = other.size().dimensions();
-			int prod = 1;
-			int[] newDims = new int[dims.length];
-			for (int i = 0; i < newDims.length; i++) {
-				newDims[i] = dims[i] /div;
-				prod = prod * newDims[i];
-			}
-			float[] oldData = other.getDataAsFloatArray();
-			float[] data = new float[prod];
-			int ind = 0;
-			int newInd = 0;
-			for (int i = 0; i < dims.length; i++) {
-				for (int j = 0; j < dims[i]; j++) {
-					if (j < newDims[i]) {
-						if (newInd < data.length && ind < oldData.length) {
-							data[newInd] = oldData[ind];
-						}
-						newInd++;
-
-					}
-					ind++;
-				}
-			}
-
-			NDArray matrixOld = other.data().get().getNDArray();
-			Size s = scalar ? new Size() : new Size(newDims);
-			NDArray matrix = DJLTensorFactory.getManager().create(data, getShape(s));
-			DJLTensorOperations ops = new DJLTensorOperationsImpl(matrix);
-			return new DJLTensor(() -> ops, s, requires_grad(), create_graph);
-		}
-	}
-
-	@Override
-	public DJLTensor view(Size size) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void close() {
-		// No-op for now.
-	}
-
-	@Override
-	protected DJLTensor createAutogradValue(Supplier<DJLTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-		return new DJLTensor(data, size, children, requires_grad, create_graph);
-	}
-
-	@Override
-	protected DJLTensor getInitialInstance() {
-		return this;
-	}
-
-	@Override
-	protected Supplier<DJLTensorOperations> multiplicativeIdentity() {
-		return () -> new DJLTensorOperationsImpl(getShape(size()), 1, false);
-	}
-
-	@Override
-	protected Supplier<DJLTensorOperations> additiveIdentity() {
-		return () -> new DJLTensorOperationsImpl(getShape(size()), 0, false);
-	}
-
-	@Override
-	public DJLTensor get() {
-		return this;
-	}
+public interface DJLTensor extends AutogradValue<DJLTensor, DJLTensorOperations, Size>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
+    PtNDArray getNDArray();
 }

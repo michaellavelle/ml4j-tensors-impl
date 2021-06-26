@@ -21,28 +21,28 @@ import org.ml4j.tensor.TensorTestBase;
 public class DJLTensorWithoutNativeGradientTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
 
 	@Override
-	protected DJLTensor createGradValue(float value, boolean requires_grad) {
-        return new DJLTensor(() -> createData(value), size, requires_grad, false);
+	protected DJLTensorImpl createGradValue(float value, boolean requires_grad) {
+        return new DJLTensorImpl(() -> createData(value), size, requires_grad, false);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(DJLTensorOperations value, boolean requires_grad) {
-        return new DJLTensor(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
+        return new DJLTensorImpl(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
+		return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false);
 	}
 
 	@Override
 	protected DJLTensorOperations createData(float value) {
-		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value, false);
+		return new DJLTensorOperationsImpl(DJLTensorImpl.getShape(size), value, false);
 	}
 
 	@Override
 	protected DJLTensorOperations createData(float value, Size size) {
-		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value, false);
+		return new DJLTensorOperationsImpl(DJLTensorImpl.getShape(size), value, false);
 	}
 
 	@Override

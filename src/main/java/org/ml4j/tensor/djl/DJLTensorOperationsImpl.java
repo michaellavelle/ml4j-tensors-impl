@@ -8,6 +8,7 @@ import ai.djl.ndarray.types.Shape;
 import org.jvmpy.symbolictensors.Operation;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,11 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     protected DJLTensorOperationsImpl(NDArray a) {
         this.ndArray = a;
         this.shape = a.getShape();
+    }
+
+    public DJLTensorOperationsImpl(ML4JTensorOperations other) {
+        this.ndArray = DJLTensorFactory.getManager().create(other.getDataAsFloatArray(), DJLTensorFactory.getShape(other.size()));
+        this.shape = DJLTensorFactory.getShape(other.size());
     }
 
     public void setNativeGradient(boolean nativeGradient) {
@@ -365,7 +371,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
             inds.add(indexes[i] == -1 ? ":" : (indexes[i] + ""));
         }
         String r = inds.toString().replace("[","").replace("]", "");
-        System.out.println(getNDArray().getShape());
         if (indexes.length == 2 && getNDArray().getShape().getShape().length == 1) {
             return create(getNDArray().reshape(1, getShape().getShape()[0]).get(new NDIndex(r)), false);
         } else {
@@ -380,7 +385,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
             inds.add(indexes[i] == -1 ? ":" : (indexes[i] + ""));
         }
         String r = inds.toString().replace("[","").replace("]", "");
-        System.out.println("Put:" + r);
         getNDArray().set(new NDIndex(r), tensor.getNDArray());
     }
 

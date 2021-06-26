@@ -17,18 +17,18 @@ public class ML4JAutogradTest extends AutogradTestBase<ML4JTensor, ML4JTensorOpe
     private static DirectedComponentsContext context = new DirectedComponentsContextImpl(matrixFactory, true);
 
     @Override
-    protected ML4JTensor createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> createData(value), size, requires_grad, false);
+    protected ML4JTensorImpl createGradValue(float value, boolean requires_grad) {
+        return new ML4JTensorImpl(context, () -> createData(value), size, requires_grad, false);
     }
 
     @Override
-    protected ML4JTensor createGradValue(float value, boolean requires_grad, Size size) {
-        return new ML4JTensor(context, () -> createData(value, size), size, requires_grad, false);
+    protected ML4JTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
+        return new ML4JTensorImpl(context, () -> createData(value, size), size, requires_grad, false);
     }
 
     @Override
-    protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> value, size, requires_grad, false);
+    protected ML4JTensorImpl createGradValue(ML4JTensorOperations value, boolean requires_grad) {
+        return new ML4JTensorImpl(context, () -> value, size, requires_grad, false);
     }
 
     @Override
@@ -76,12 +76,12 @@ public class ML4JAutogradTest extends AutogradTestBase<ML4JTensor, ML4JTensorOpe
     }
 
     @Override
-    protected ML4JTensor createRandomValue(boolean requires_grad, int... dims) {
+    protected ML4JTensorImpl createRandomValue(boolean requires_grad, int... dims) {
         return createGradValue((float) Math.random(), requires_grad, new Size(dims));
     }
 
     @Override
-    protected ML4JTensor createOnesValue(boolean requires_grad, int... dims) {
+    protected ML4JTensorImpl createOnesValue(boolean requires_grad, int... dims) {
         return createGradValue(1, requires_grad, new Size(dims));
     }
 

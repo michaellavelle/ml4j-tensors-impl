@@ -19,7 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.tensor.djl.DJLTensorImpl;
 import org.ml4j.tensor.djl.DJLTensorOperationsImpl;
+import org.ml4j.tensor.ml4j.ML4JTensor;
+import org.ml4j.tensor.ml4j.ML4JTensorFactory;
+import org.ml4j.tensor.ml4j.ML4JTensorWrapperImpl;
 import org.mockito.MockitoAnnotations;
 
 /**
@@ -32,7 +36,6 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase
 
     protected abstract boolean isNativeGradientSupported();
     protected abstract boolean isNativeGradientExpected();
-
 
 
     @Test
@@ -202,7 +205,7 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase
 
     @Test
     public void testMatMul() {
-        var left = createGradValue(-1, true, new Size(new Size(2, 128), new Size(512))).name_("a");
+        var left = createGradValue(-2, true, new Size(new Size(2, 128), new Size(512))).name_("a");
         var right = createGradValue(1, true, new Size(512, 65)).name_("a");
 
         if (!isNativeGradientExpected()) {

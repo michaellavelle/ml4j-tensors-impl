@@ -4,8 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.ml4j.ML4JTensor;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

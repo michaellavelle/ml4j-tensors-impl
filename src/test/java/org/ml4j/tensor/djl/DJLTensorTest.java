@@ -14,41 +14,161 @@
 
 package org.ml4j.tensor.djl;
 
+import ai.djl.ndarray.NDArray;
 import org.junit.Assert;
+import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
+import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 import org.ml4j.tensor.TensorTestBase;
+import org.ml4j.tensor.ml4j.*;
+
+import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 public class DJLTensorTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
 
+	private DJLTensorImpl createFromML4JTensor(ML4JTensorImpl t) {
+		NDArray ndArray = DJLTensorFactory.getManager().create(t.getDataAsFloatArray(),
+				DJLTensorFactory.getShape(t.size()));
+		DJLTensorOperations ops = new DJLTensorOperationsImpl(ndArray);
+		return new DJLTensorImpl(() -> ops, t.size(), t.requires_grad(), false);
+	}
+
+
+	@Test
+	public void switchTest() {
+
+		var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+		var b = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+		if (!isNativeGradientExpected()) {
+			a.getGradNode().setDisableNativeGradient(true);
+		}
+
+		var c = a.add(b);
+
+
+		DJLTensorImpl t = (DJLTensorImpl)c;
+
+		//t.getGradNode().setDisableNativeGradient(true);
+
+
+		//ML4JTensor s = new ML4JTensor(t, ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT);
+
+		ML4JTensor s = new ML4JTensorWrapperImpl(ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT, t);
+
+		var u = s.mul(s);
+		System.out.println("CL:" + u.getClass());
+		assertEquals(createData(-8f, new Size(2, 2)), c.data().get());
+
+		u.backward();
+
+		assertEquals(createData(-16f, new Size(2, 2)), t.grad().data().get());
+
+
+		assertEquals(createData(-16f, new Size(2, 2)), a.grad().data().get());
+
+		if (isNativeGradientSupported()) {
+			Assert.assertEquals(isNativeGradientExpected(), a.grad().isNativeGradient());
+		}
+	}
+
+	@Test
+	public void switchTest2() {
+
+		var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+		var b = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+		if (!isNativeGradientExpected()) {
+			a.getGradNode().setDisableNativeGradient(true);
+		}
+
+		var c = a.add(b);
+
+
+		DJLTensorImpl t = (DJLTensorImpl)c;
+
+		ML4JTensor s = new ML4JTensorWrapperImpl(ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT, t);
+
+		DifferentiableUnaryOperator<ML4JTensor, ML4JTensorOperations, Size> differentiableUnaryOperator = new
+				DifferentiableUnaryOperator<ML4JTensor, ML4JTensorOperations, Size>() {
+
+					@Override
+					public UnaryOperator<ML4JTensorOperations> getForward() {
+						return f -> f.mul(2);
+					}
+
+					@Override
+					public BiFunction<ML4JTensor, ML4JTensor, ML4JTensor> getBackwardThis() {
+						return (g, p) -> {
+
+							System.out.println("BBBBBBBBB:" + p.getClass());
+							System.out.println("BBBBBBBBC:" + g.getClass());
+
+							return g.mul(2); };
+					}
+
+					@Override
+					public UnaryOperator<Size> getContextMapper() {
+						return s -> s;
+					}
+				};
+		var u = s.apply(differentiableUnaryOperator).requires_grad_(true);
+		assertEquals(createData(-8f, new Size(2, 2)), c.data().get());
+
+
+		u.backward();
+
+		assertEquals(createData(2f, new Size(2, 2)), t.grad().data().get());
+
+		assertEquals(createData(2f, new Size(2, 2)), a.grad().data().get());
+
+		Assert.assertFalse(a.grad().isNativeGradient());
+	}
+
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad) {
-        return new DJLTensor(() -> createData(value), size, requires_grad, false);
+        return new DJLTensorImpl(() -> createData(value), size, requires_grad, false).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(DJLTensorOperations value, boolean requires_grad) {
-        return new DJLTensor(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
+        return new DJLTensorImpl(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
+		return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DJLTensorOperations createData(float value) {
-		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value, false);
+		return new DJLTensorOperationsImpl(DJLTensorImpl.getShape(size), value, false);
 	}
 
 	@Override
 	protected DJLTensorOperations createData(float value, Size size) {
-		return new DJLTensorOperationsImpl(DJLTensor.getShape(size), value, false);
+		return new DJLTensorOperationsImpl(DJLTensorImpl.getShape(size), value, false);
 	}
 
 	@Override
 	protected void assertEquals(DJLTensorOperations value1, DJLTensorOperations value2) {
 		float[] m1 = value1.getNDArray().toFloatArray();
 		float[] m2 = value2.getNDArray().toFloatArray();
+		Assert.assertEquals(m1.length,  m2.length);
+		for (int i = 0; i < m1.length; i++) {
+
+			Assert.assertEquals(m1[i], m2[i], 0.01f);
+		}
+	}
+
+	protected void assertEquals(DJLTensorOperations value1, ML4JTensorOperations value2) {
+		float[] m1 = value1.getNDArray().toFloatArray();
+		float[] m2 = value2.getMatrix().getRowByRowArray();
 		Assert.assertEquals(m1.length,  m2.length);
 		for (int i = 0; i < m1.length; i++) {
 

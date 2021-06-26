@@ -15,6 +15,7 @@
 package org.ml4j.tensor.ml4j;
 
 import org.junit.Assert;
+import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
@@ -22,6 +23,9 @@ import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.TensorTestBase;
+import org.ml4j.tensor.djl.DJLTensor;
+import org.ml4j.tensor.djl.DJLTensorImpl;
+import org.ml4j.tensor.djl.DJLTensorWrapperImpl;
 
 public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
 
@@ -29,19 +33,52 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 
 	private static DirectedComponentsContext context =  new DirectedComponentsContextImpl(matrixFactory, true);
 
+	@Test
+	public void switchTest() {
+
+		var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+		var b = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+		if (!isNativeGradientExpected()) {
+			a.getGradNode().setDisableNativeGradient(true);
+		}
+
+		var c = a.add(b);
+
+		ML4JTensorImpl t = (ML4JTensorImpl)c;
+
+		DJLTensor s = new DJLTensorWrapperImpl(ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT, t);
+
+		var u = s.mul(s);
+
+		assertEquals(createData(-8f, new Size(2, 2)), c.data().get());
+
+		u.backward();
+
+		assertEquals(createData(-16f, new Size(2, 2)), t.grad().data().get());
+
+		assertEquals(createData(-16f, new Size(2, 2)), a.grad().data().get());
+
+		if (isNativeGradientSupported()) {
+			Assert.assertEquals(isNativeGradientExpected(), a.grad().isNativeGradient());
+		}
+	}
+
+
 	@Override
-	protected ML4JTensor createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> createData(value), size, requires_grad, false);
+	protected ML4JTensorImpl createGradValue(float value, boolean requires_grad) {
+        return new ML4JTensorImpl(context, () -> createData(value), size, requires_grad, false);
 	}
 
 	@Override
-	protected ML4JTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new ML4JTensor(context, () -> createData(value, size), size, requires_grad, false);
+	protected ML4JTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
+		return new ML4JTensorImpl(context, () -> createData(value, size), size, requires_grad, false);
 	}
 
 	@Override
-	protected ML4JTensor createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensor(context, () -> value, size, requires_grad, false);
+	protected ML4JTensorImpl createGradValue(ML4JTensorOperations value, boolean requires_grad) {
+        return new ML4JTensorImpl(context, () -> value, size, requires_grad, false);
 	}
 
 	@Override

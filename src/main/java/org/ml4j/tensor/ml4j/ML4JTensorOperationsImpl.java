@@ -11,6 +11,7 @@ import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.neurons.*;
 import org.ml4j.nn.neurons.format.ImageNeuronsActivationFormat;
 import org.ml4j.nn.neurons.format.NeuronsActivationFormat;
+import org.ml4j.tensor.djl.DJLTensorOperations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,10 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 		if (matrix.getRows() == 0 || matrix.getColumns() ==0) {
 			throw new IllegalArgumentException(matrix.getRows() + ":" + matrix.getColumns());
 		}
+	}
+
+	public ML4JTensorOperationsImpl(DirectedComponentsContext directedComponentsContext, DJLTensorOperations other) {
+		this(directedComponentsContext, directedComponentsContext.getMatrixFactory().createMatrixFromRowsByRowsArray(other.size().dimensions()[0], other.size().dimensions()[1], other.getDataAsFloatArray()), other.size());
 	}
 
 	public ML4JTensorOperationsImpl(DirectedComponentsContext directedComponentsContext, float value, Size size) {

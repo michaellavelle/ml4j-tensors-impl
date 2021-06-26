@@ -10,28 +10,28 @@ import org.ml4j.tensor.AutogradTestBase;
 public class DJLAutogradTest extends AutogradTestBase<DJLTensor, DJLTensorOperations> {
 
     @Override
-    protected DJLTensor createGradValue(float value, boolean requires_grad) {
-        return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
+    protected DJLTensorImpl createGradValue(float value, boolean requires_grad) {
+        return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false);
     }
 
     @Override
-    protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
-        return new DJLTensor(() -> createData(value, size), size, requires_grad, false);
+    protected DJLTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
+        return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false);
     }
 
     @Override
-    protected DJLTensor createRandomValue(boolean requires_grad, int... dims) {
+    protected DJLTensorImpl createRandomValue(boolean requires_grad, int... dims) {
         return createGradValue((float) Math.random(), requires_grad, new Size(dims));
     }
 
     @Override
-    protected DJLTensor createOnesValue(boolean requires_grad, int... dims) {
+    protected DJLTensorImpl createOnesValue(boolean requires_grad, int... dims) {
         return createGradValue(1, requires_grad, new Size(dims));
     }
 
     @Override
-    protected DJLTensor createGradValue(DJLTensorOperations value, boolean requires_grad) {
-        return new DJLTensor(() -> value, size, requires_grad, false);
+    protected DJLTensorImpl createGradValue(DJLTensorOperations value, boolean requires_grad) {
+        return new DJLTensorImpl(() -> value, size, requires_grad, false);
     }
 
     private Shape getShape(Size size) {

@@ -8,17 +8,26 @@ import org.ml4j.autograd.Value;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
-import org.ml4j.tensor.djl.DJLTensor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class DifferentiableWrappedTensorOperations<V extends DifferentiableWrappedTensorOperations<V, D> & Value<V, D, Size>, D extends TensorOperations<D>> extends AutogradValueImpl<V, D, Size> implements AutogradValue<V, D, Size>, TensorOperations<V>, org.ml4j.autograd.DataSupplier<D>, Tensor<V, D>, DifferentiableWrappedArithmeticOperations<V, D, Size> {
+public abstract class DifferentiableWrappedTensorOperations<V extends Tensor<V, D> & Value<V, D, Size>, D extends TensorOperations<D>> extends AutogradValueImpl<V, D, Size> implements AutogradValue<V, D, Size>, TensorOperations<V>, org.ml4j.autograd.DataSupplier<D>, Tensor<V, D>, DifferentiableWrappedArithmeticOperations<V, D, Size> {
 
     public DifferentiableWrappedTensorOperations(Supplier<D> data, Size context, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
         super(data, context, children, requires_grad, create_graph);
+    }
+
+    public <X extends AutogradValue<X, Y, Z>, Y, Z> DifferentiableWrappedTensorOperations(AutogradValue<X, Y, Z> other, Function<Y, D> dataMapper, Function<Z, Size> contextMapper, Function<X, V> valueMapper, Function<V, X> valueReverseMapper, Supplier<Optional<V>> nativeGradientSupplier) {
+        super(other, dataMapper, contextMapper, valueMapper, valueReverseMapper, nativeGradientSupplier);
+    }
+
+    public DifferentiableWrappedTensorOperations(V other) {
+        super(other);
     }
 
     @Override
