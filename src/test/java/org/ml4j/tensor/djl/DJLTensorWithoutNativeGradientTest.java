@@ -56,6 +56,19 @@ public class DJLTensorWithoutNativeGradientTest extends TensorTestBase<DJLTensor
 		}
 	}
 
+	@Override
+	protected void assertSize(DJLTensor tensor, Size s) {
+		Assert.assertEquals(tensor.size().dimensions().length, s.dimensions().length);
+		for (int i = 0; i < s.dimensions().length; i++) {
+			Assert.assertEquals(tensor.size().dimensions()[i], s.dimensions()[i]);
+
+		}
+		Assert.assertEquals(tensor.getNDArray().getShape().getShape().length, s.dimensions().length);
+		for (int i = 0; i < s.dimensions().length; i++) {
+			Assert.assertEquals(tensor.getNDArray().getShape().getShape()[i], s.dimensions()[i]);
+
+		}
+	}
 
 	@Override
 	protected DJLTensorOperations add(DJLTensorOperations value1, DJLTensorOperations value2) {

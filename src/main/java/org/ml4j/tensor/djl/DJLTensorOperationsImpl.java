@@ -8,6 +8,7 @@ import ai.djl.ndarray.types.Shape;
 import org.jvmpy.symbolictensors.Operation;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.dl4j.DL4JTensorOperations;
 import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
 import java.util.ArrayList;
@@ -29,6 +30,11 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     }
 
     public DJLTensorOperationsImpl(ML4JTensorOperations other) {
+        this.ndArray = DJLTensorFactory.getManager().create(other.getDataAsFloatArray(), DJLTensorFactory.getShape(other.size()));
+        this.shape = DJLTensorFactory.getShape(other.size());
+    }
+
+    public DJLTensorOperationsImpl(DL4JTensorOperations other) {
         this.ndArray = DJLTensorFactory.getManager().create(other.getDataAsFloatArray(), DJLTensorFactory.getShape(other.size()));
         this.shape = DJLTensorFactory.getShape(other.size());
     }
@@ -55,15 +61,19 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     }
 
     @Override
-    public DJLTensorOperations reshape_(Size size) {
+    public DJLTensorOperations resize_(Size size) {
         Size thisSize = this.getSize(shape);
         if (thisSize.numel() != size.numel()) {
             throw new IllegalArgumentException();
         }
-        thisSize = size;
-        this.shape = getShape(thisSize);
-        this.ndArray = this.ndArray.reshape(shape);
+        this.shape = getShape(size);
+        this.ndArray = this.ndArray.reshape(this.shape);
         return this;
+    }
+
+    @Override
+    public DJLTensorOperations reshape(Size size) {
+        return applyUnaryOperation(t -> t.reshape(getShape(size)));
     }
 
     @Override
@@ -82,15 +92,18 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         return size().dimensions()[d];
     }
 
+    /*
     @Override
     public DJLTensorOperations size_(Size size) {
         throw new UnsupportedOperationException();
     }
 
+
+     */
     @Override
     public DJLTensorOperations zero_() {
-        throw new UnsupportedOperationException();
-    }
+        this.ndArray = DJLTensorFactory.getManager().zeros(getShape(size()), DataType.FLOAT32);
+        return this;    }
 
     @Override
     public DJLTensorOperations normal_(float v1, float v2) {
@@ -273,10 +286,10 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     @Override
     public DJLTensorOperations add_(DJLTensorOperations other) {
         if (other.size().dimensions().length == 1 && (size().dimensions()[1] == 1 || size().dimensions()[0] == 1)) {
-            other.reshape_(size());
+            other = other.reshape(size());
         }
         if (size().dimensions().length == 1 && (other.size().dimensions()[1] == 1 || other.size().dimensions()[0] == 1)) {
-            reshape_(other.size());
+            reshape(other.size());
         }
         getNDArray().addi(other.getNDArray());
         return this;
@@ -315,10 +328,10 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
     @Override
     public DJLTensorOperations sub_(DJLTensorOperations other) {
         if (other.size().dimensions().length == 1 && (size().dimensions()[1] == 1 || size().dimensions()[0] == 1)) {
-            other.reshape_(size());
+            other.resize_(size());
         }
         if (size().dimensions().length == 1 && (other.size().dimensions()[1] == 1 || other.size().dimensions()[0] == 1)) {
-            reshape_(other.size());
+            resize_(other.size());
         }
         getNDArray().subi(other.getNDArray());
         return this;

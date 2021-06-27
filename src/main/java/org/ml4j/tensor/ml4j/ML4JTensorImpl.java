@@ -117,10 +117,13 @@ public class ML4JTensorImpl extends DifferentiableWrappedTensorOperations<ML4JTe
 		return size().getDimensions().get(dim);
 	}
 
+	/*
 	@Override
 	public ML4JTensor size_(Size size) {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
+
+	 */
 
 	@Override
 	public void close() {

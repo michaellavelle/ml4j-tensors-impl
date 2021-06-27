@@ -14,11 +14,8 @@
 
 package org.ml4j.tensor;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.BackwardConfig;
 import org.mockito.MockitoAnnotations;
 
 /**

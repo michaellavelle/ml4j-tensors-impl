@@ -143,7 +143,7 @@ public class TensorMatrix<T extends Tensor<T, ?>> implements Matrix, EditableMat
 
     @Override
     public void reshape(int i, int i1) {
-        tensor.reshape_(new Size(i, i1));
+        tensor.resize_(new Size(i, i1));
     }
 
     @Override

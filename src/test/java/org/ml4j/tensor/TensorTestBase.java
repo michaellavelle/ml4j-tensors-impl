@@ -15,16 +15,9 @@
 package org.ml4j.tensor;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.tensor.djl.DJLTensorImpl;
-import org.ml4j.tensor.djl.DJLTensorOperationsImpl;
-import org.ml4j.tensor.ml4j.ML4JTensor;
-import org.ml4j.tensor.ml4j.ML4JTensorFactory;
-import org.ml4j.tensor.ml4j.ML4JTensorWrapperImpl;
-import org.mockito.MockitoAnnotations;
 
 /**
  * A base test for Tensor implementations.
@@ -36,6 +29,30 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase
 
     protected abstract boolean isNativeGradientSupported();
     protected abstract boolean isNativeGradientExpected();
+
+    protected abstract void assertSize(T tensor, Size s);
+
+    @Test
+    public void test_reshape() {
+        var a = createGradValue(-4f, true, new Size(2, 128)).name_("a");
+        var b = a.reshape(new Size(1, 256));
+
+        Assert.assertEquals(a.numel(), b.numel());
+        assertEquals(a.data().get(), b.data().get());
+        assertSize(a, new Size(2, 128));
+        assertSize(b, new Size(1, 256));
+    }
+
+    @Test
+    public void test_resize_() {
+        var a = createGradValue(-4f, true, new Size(2, 128)).name_("a");
+        var b = a.resize_(new Size(1, 256));
+
+        Assert.assertSame(a, b);
+        assertEquals(a.data().get(), b.data().get());
+        assertSize(a, new Size(1, 256));
+    }
+
 
 
     @Test
@@ -130,8 +147,6 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase
 
         var xGradAfterFirstBackward = x.grad();
 
-        System.out.println("IS NATIVE:" + xGradAfterFirstBackward.isNativeGradient());
-
         var yGradAfterFirstBackward = y.grad();
 
         assertEquals(createData(1.6f), xGradAfterFirstBackward.data().get());
@@ -146,8 +161,6 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase
         grad_sum.backward(new BackwardConfig());
 
         var xGradAfterSecondBackward = x.grad();
-        
-        System.out.println("IS NATIVE:" + xGradAfterSecondBackward.isNativeGradient());
 
         var yGradAfterSecondBackward = y.grad();
 

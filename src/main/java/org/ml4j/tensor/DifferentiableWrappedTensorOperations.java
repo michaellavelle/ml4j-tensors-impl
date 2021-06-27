@@ -142,8 +142,15 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Tensor<V, 
     }
 
     @Override
-    public V reshape_(Size size) {
-        return applyUnaryOperator(f -> f.reshape_(size), (g, v) -> g.reshape_(size()), "reshape", s -> size);
+    public V reshape(Size size) {
+        return applyUnaryOperator(f -> f.reshape(size), (g, v) -> g.reshape(size()), "reshape", s -> size);
+    }
+
+    @Override
+    public V resize_(Size size) {
+        V result = applyInlineUnaryOperator(t -> t.resize_(size), "resize_");
+        this.context = size;
+        return result;
     }
 
     @Override
@@ -201,10 +208,10 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Tensor<V, 
 
         Size[] sizes = MultiplicationRules.matmul(size(), other.size());
 
-        return this.applyBinaryOperator(other, (f, s) -> f.reshape_(sizes[0]).matmul(s.reshape_(sizes[1])), (g, p) -> {
-            return g.reshape_(sizes[2]).matmul(p.getRight().reshape_(sizes[1]).t()).reshape_(size());
+        return this.applyBinaryOperator(other, (f, s) -> f.reshape(sizes[0]).matmul(s.reshape(sizes[1])), (g, p) -> {
+            return g.reshape(sizes[2]).matmul(p.getRight().reshape(sizes[1]).t()).reshape(size());
         }, (g, p) -> {
-            return g.reshape_(sizes[2]).t().matmul(p.getLeft().reshape_(sizes[0])).t().reshape_(other.size());
+            return g.reshape(sizes[2]).t().matmul(p.getLeft().reshape(sizes[0])).t().reshape(other.size());
         }, "matmul", (f, s) -> {
             Size result =  sizes[3];
             int[] dims = result.dimensions();
@@ -238,6 +245,7 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Tensor<V, 
 
     @Override
     public V normal_(float v1, float v2) {
+
         return applyInlineUnaryOperator(t -> t.normal_(v1, v2), "normal");
     }
 
@@ -261,7 +269,7 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Tensor<V, 
 
     @Override
     public V zero_() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return applyInlineUnaryOperator(t -> t.zero_(), "zero");
     }
 
     @Override

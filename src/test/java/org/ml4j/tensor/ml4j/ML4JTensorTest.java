@@ -23,9 +23,8 @@ import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.TensorTestBase;
+import org.ml4j.tensor.djl.DJLFromML4JTensorWrapperImpl;
 import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorImpl;
-import org.ml4j.tensor.djl.DJLTensorWrapperImpl;
 
 public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
 
@@ -48,7 +47,7 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 
 		ML4JTensorImpl t = (ML4JTensorImpl)c;
 
-		DJLTensor s = new DJLTensorWrapperImpl(ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT, t);
+		DJLTensor s = new DJLFromML4JTensorWrapperImpl(ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT, t);
 
 		var u = s.mul(s);
 
@@ -111,6 +110,26 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 		return value1.mul(value2);
 	}
 
+
+	@Override
+	protected void assertSize(ML4JTensor tensor, Size s) {
+		Assert.assertEquals(tensor.size().dimensions().length, s.dimensions().length);
+		for (int i = 0; i < s.dimensions().length; i++) {
+			Assert.assertEquals(tensor.size().dimensions()[i], s.dimensions()[i]);
+
+		}
+		/*
+		if (s.dimensions().length == 2) {
+			Assert.assertEquals(tensor.data().get().getMatrix().getRows(), s.dimensions()[0]);
+			Assert.assertEquals(tensor.data().get().getMatrix().getColumns(), s.dimensions()[1]);
+		} else if (s.dimensions().length == 1) {
+			Assert.assertEquals(tensor.data().get().getMatrix().getRows(), 1);
+			Assert.assertEquals(tensor.data().get().getMatrix().getColumns(), s.dimensions()[0]);
+		} else {
+			throw new IllegalArgumentException();
+		}
+		*/
+	}
 	@Override
 	protected boolean isNativeGradientSupported() {
 		return false;

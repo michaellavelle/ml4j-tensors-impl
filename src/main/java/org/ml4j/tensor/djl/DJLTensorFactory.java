@@ -17,13 +17,12 @@ public class DJLTensorFactory implements TensorFactory<DJLTensor, DJLTensorOpera
     }
 
     @Override
-    public DJLTensorImpl create(Supplier<DJLTensorOperations> supplier, Size size) {
+    public DJLTensor create(Supplier<DJLTensorOperations> supplier, Size size) {
         return new DJLTensorImpl(supplier, size, false, false);
     }
 
     @Override
-    public DJLTensorImpl create(float[] data, Size size) {
-        System.out.println("Creating:" + size);
+    public DJLTensor create(float[] data, Size size) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.create(data, getShape(size))), size, false, false);
     }
 
@@ -36,37 +35,37 @@ public class DJLTensorFactory implements TensorFactory<DJLTensor, DJLTensorOpera
     }
 
     @Override
-    public DJLTensorImpl create(float[] data) {
+    public DJLTensor create(float[] data) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.create(data, new Shape())), new Size(), false, false);
     }
 
     @Override
-    public DJLTensorImpl create() {
+    public DJLTensor create() {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.create(new Shape())), new Size(), false, false);
     }
 
     @Override
-    public DJLTensorImpl ones(Size size) {
+    public DJLTensor ones(Size size) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.ones(getShape(size))), size, false, false);
     }
 
     @Override
-    public DJLTensorImpl zeros(Size size) {
+    public DJLTensor zeros(Size size) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.zeros(getShape(size))), size, false, false);
     }
 
     @Override
-    public DJLTensorImpl randn(Size size) {
+    public DJLTensor randn(Size size) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.randomNormal(getShape(size))), size, false, false);
     }
 
     @Override
-    public DJLTensorImpl rand(Size size) {
+    public DJLTensor rand(Size size) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.randomUniform(0, 1, getShape(size))), size, false, false);
     }
 
     @Override
-    public DJLTensorImpl empty(Size size) {
+    public DJLTensor empty(Size size) {
         return new DJLTensorImpl(() -> new DJLTensorOperationsImpl(manager.create(getShape(size))), size, false, false);
     }
 }

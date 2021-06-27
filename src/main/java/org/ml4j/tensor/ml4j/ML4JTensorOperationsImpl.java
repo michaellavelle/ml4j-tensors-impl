@@ -333,7 +333,12 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	}
 
 	@Override
-	public ML4JTensorOperations reshape_(Size size) {
+	public ML4JTensorOperations reshape(Size size) {
+		return toML4JTensorOperations(matrix, size);
+	}
+
+	@Override
+	public ML4JTensorOperations resize_(Size size) {
 		if (this.size.numel() != size.numel()) {
 			throw new IllegalArgumentException("Number of elements do not match");
 		}
@@ -524,6 +529,7 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 		return data;
 	}
 
+	/*
 	@Override
 	public ML4JTensorOperations size_(Size size) {
 		if (size.numel() != this.numel()) {
@@ -533,6 +539,8 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 		}
 		return this;
 	}
+
+	 */
 
 	@Override
 	public ML4JTensorOperations columnSums() {

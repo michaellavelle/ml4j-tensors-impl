@@ -13,12 +13,13 @@ package org.ml4j.tensor;
  * the License.
  */
 
-import com.google.common.base.Supplier;
 import org.jvmpy.symbolictensors.Size;
 import org.jvmpy.symbolictensors.TensorDataContainer;
 import org.ml4j.autograd.arithmetic.operations.ArithmeticOperations;
 
-public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, java.util.function.Supplier<T>, ArithmeticOperations<T> {
+import java.util.function.Supplier;
+
+public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, ArithmeticOperations<T> {
 
     int numel();
 
@@ -70,7 +71,7 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, j
 
     int size(int dim);
 
-    T size_(Size size);
+    //T size_(Size size);
 
     T zero_();
 
@@ -80,8 +81,10 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, j
 
     T view(Size size);
 
-    T reshape_(Size size);
+    T reshape(Size size);
 
+    T resize_(Size size);
+    
     T view(int... dims);
 
     T relu();

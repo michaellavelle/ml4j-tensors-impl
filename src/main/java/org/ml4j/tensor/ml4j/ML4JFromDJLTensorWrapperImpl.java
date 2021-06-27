@@ -1,10 +1,6 @@
 package org.ml4j.tensor.ml4j;
 
-import ai.djl.engine.EngineException;
-import ai.djl.pytorch.jni.JniUtils;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.AutogradValueCreator;
-import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.impl.GradNodeWrapper;
 import org.ml4j.autograd.impl.ValueNodeWrapper;
 import org.ml4j.autograd.node.GradNode;
@@ -15,13 +11,11 @@ import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.TensorWrapperImpl;
 import org.ml4j.tensor.djl.*;
 
-import java.util.function.Supplier;
-
-public class ML4JTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, ML4JTensor, DJLTensorOperations, ML4JTensorOperations> implements ML4JTensor {
+public class ML4JFromDJLTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, ML4JTensor, DJLTensorOperations, ML4JTensorOperations> implements ML4JTensor {
 
     private DirectedComponentsContext context;
 
-    public ML4JTensorWrapperImpl(DirectedComponentsContext context, DJLTensor t) {
+    public ML4JFromDJLTensorWrapperImpl(DirectedComponentsContext context, DJLTensor t) {
         super(t);
         this.context = context;
     }
@@ -33,20 +27,20 @@ public class ML4JTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, ML4JTens
 
     @Override
     protected DJLTensor extract(ML4JTensor tensor) {
-        if(tensor instanceof ML4JTensorWrapperImpl) {
-            ML4JTensorWrapperImpl oth = (ML4JTensorWrapperImpl)tensor;
+        if(tensor instanceof ML4JFromDJLTensorWrapperImpl) {
+            ML4JFromDJLTensorWrapperImpl oth = (ML4JFromDJLTensorWrapperImpl)tensor;
             return oth.t;
         }
-        return new DJLTensorWrapperImpl(context, tensor);
+        return new DJLFromML4JTensorWrapperImpl(context, tensor);
     }
 
     @Override
     protected ML4JTensor create(DJLTensor tensor) {
-        if(tensor instanceof DJLTensorWrapperImpl) {
-            DJLTensorWrapperImpl oth = (DJLTensorWrapperImpl)tensor;
+        if(tensor instanceof DJLFromML4JTensorWrapperImpl) {
+            DJLFromML4JTensorWrapperImpl oth = (DJLFromML4JTensorWrapperImpl)tensor;
             return oth.getT();
         }
-        return new ML4JTensorWrapperImpl(context, tensor);
+        return new ML4JFromDJLTensorWrapperImpl(context, tensor);
     }
 
     @Override
@@ -66,12 +60,12 @@ public class ML4JTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, ML4JTens
 
     @Override
     public ValueNode<ML4JTensor> getValueNode() {
-        return new ValueNodeWrapper<>(t.getValueNode(), f -> new ML4JTensorWrapperImpl(context, f).requires_grad_(false), f -> new DJLTensorWrapperImpl(context, f).requires_grad_(false));
+        return new ValueNodeWrapper<>(t.getValueNode(), f -> new ML4JFromDJLTensorWrapperImpl(context, f).requires_grad_(false), f -> new DJLFromML4JTensorWrapperImpl(context, f).requires_grad_(false));
     }
 
     @Override
     public GradNode<ML4JTensor> getGradNode() {
-        return new GradNodeWrapper<>(t.getGradNode(), f -> f == null ? null : new ML4JTensorWrapperImpl(context, f).requires_grad_(false), f -> f == null ? null : new DJLTensorWrapperImpl(context, f).requires_grad_(false));
+        return new GradNodeWrapper<>(t.getGradNode(), f -> f == null ? null : new ML4JFromDJLTensorWrapperImpl(context, f).requires_grad_(false), f -> f == null ? null : new DJLFromML4JTensorWrapperImpl(context, f).requires_grad_(false));
     }
 
     @Override

@@ -338,11 +338,14 @@ public abstract class TensorWrapperImpl<S extends Tensor<S, D>, T extends Tensor
         return t.size(dim);
     }
 
+    /*
     @Override
     public T size_(Size size) {
         t.size_(size);
         return get();
     }
+
+     */
 
     @Override
     public T zero_() {
@@ -368,9 +371,14 @@ public abstract class TensorWrapperImpl<S extends Tensor<S, D>, T extends Tensor
     }
 
     @Override
-    public T reshape_(Size size) {
-        t.reshape_(size);
+    public T resize_(Size size) {
+        t.resize_(size);
         return get();
+    }
+
+    @Override
+    public T reshape(Size size) {
+        return create(t.reshape(size));
     }
 
     @Override
