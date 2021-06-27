@@ -7,7 +7,7 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.tensor.AutogradTestBase;
 
 
-public class DJLAutogradTest extends AutogradTestBase<DJLTensor, DJLTensorOperations> {
+public class DJLAutogradWithoutNativeGradientTest extends AutogradTestBase<DJLTensor, DJLTensorOperations> {
 
     @Override
     protected DJLTensorImpl createGradValue(float value, boolean requires_grad) {
@@ -67,8 +67,7 @@ public class DJLAutogradTest extends AutogradTestBase<DJLTensor, DJLTensorOperat
     protected DJLTensorOperations mul(DJLTensorOperations value1, float value2) {
         return value1.mul(value2);
     }
-
-
+    
     @Override
     protected boolean isNativeGradientSupported() {
         return true;
@@ -76,7 +75,7 @@ public class DJLAutogradTest extends AutogradTestBase<DJLTensor, DJLTensorOperat
 
     @Override
     protected boolean isNativeGradientExpected() {
-        return true;
+        return false;
     }
 
     @Override

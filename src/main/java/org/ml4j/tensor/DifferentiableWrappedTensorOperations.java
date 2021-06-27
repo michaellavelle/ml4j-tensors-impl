@@ -10,20 +10,34 @@ import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.node.Node;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class DifferentiableWrappedTensorOperations<V extends DifferentiableWrappedTensorOperations<V, D> & Value<V, D, Size>, D extends TensorOperations<D>> extends AutogradValueImpl<V, D, Size> implements AutogradValue<V, D, Size>, TensorOperations<V>, org.ml4j.autograd.DataSupplier<D>, Tensor<V, D>, DifferentiableWrappedArithmeticOperations<V, D, Size> {
+public abstract class DifferentiableWrappedTensorOperations<V extends Tensor<V, D> & Value<V, D, Size>, D extends TensorOperations<D>> extends AutogradValueImpl<V, D, Size> implements AutogradValue<V, D, Size>, TensorOperations<V>, org.ml4j.autograd.DataSupplier<D>, Tensor<V, D>, DifferentiableWrappedArithmeticOperations<V, D, Size> {
 
     public DifferentiableWrappedTensorOperations(Supplier<D> data, Size context, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
         super(data, context, children, requires_grad, create_graph);
     }
 
+    public <X extends AutogradValue<X, Y, Z>, Y, Z> DifferentiableWrappedTensorOperations(AutogradValue<X, Y, Z> other, Function<Y, D> dataMapper, Function<Z, Size> contextMapper, Function<X, V> valueMapper, Function<V, X> valueReverseMapper, Supplier<Optional<V>> nativeGradientSupplier) {
+        super(other, dataMapper, contextMapper, valueMapper, valueReverseMapper, nativeGradientSupplier);
+    }
+
+    public DifferentiableWrappedTensorOperations(V other) {
+        super(other);
+    }
+
     @Override
     public V add(V other) {
-        Size broadcast = MultiplicationRules.getBroadcast(size(), other.size());
-        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add:" + size() + ":" + other.context(), (f, s) -> broadcast);
+        return applyBinaryOperator(other, D::add, (g, p) -> g, (g, p) -> g, "add:" + size() + ":" + other.context(), (f, s) -> getMappedContext(f, s));
+    }
+
+    @Override
+    public boolean isNativeGradient() {
+        return data().get().isNativeGradient();
     }
 
     @Override
@@ -64,8 +78,18 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
     }
 
     @Override
-    public V sum() {
-        return applyUnaryOperator(t -> t.sum(), (g, v) -> v.mul(g), "sum", s -> new Size());
+    public V sum(int...axes) {
+        return applyUnaryOperator(t -> t.sum(axes), (g, v) -> { if (axes.length > 0) throw new UnsupportedOperationException(); return v.mul(0).add(1).mul(g); }, "sum", s -> (axes.length == 0) ? new Size() : (axes.length == 1 && axes[0] == 0) ? new Size(1, size().dimensions()[1]) : new Size(size().dimensions()[0], 1) );
+    }
+
+    @Override
+    public V argMax(int i) {
+        return applyUnaryOperator(t -> t.argMax(i), (g, v) -> backwardNotYetImplemented(), "sum", s -> new Size() );
+    }
+
+    @Override
+    public V argMax() {
+        return applyUnaryOperator(t -> t.argMax(), (g, v) -> backwardNotYetImplemented(), "sum", s -> new Size() );
     }
 
     @Override
@@ -83,17 +107,100 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
 
     @Override
     public V sigmoid() {
-        return applyUnaryOperator(D::sigmoid, (g, v) -> g.mul(sigGrad(v.getDataAsFloatArray()[0])), "gt", s -> s);
+        return applyUnaryOperator(D::sigmoid, (g, v) -> g.mul(sigGrad(v.getDataAsFloatArray()[0])), "sigmoid", s -> s);
     }
 
     @Override
-    public V reshape_(Size size) {
-        return applyUnaryOperator(f -> f.reshape_(size), (g, v) -> g.reshape_(size()), "reshape", s -> size);
+    public V exp() {
+        return applyUnaryOperator(D::exp, (g, v) -> backwardNotYetImplemented(), "exp", s -> s);
+    }
+
+    @Override
+    public V log() {
+        return applyUnaryOperator(D::log, (g, v) -> backwardNotYetImplemented(), "log", s -> s);
+    }
+
+
+    @Override
+    public V getTensor(int...indexes) {
+        int[] inds = new int[indexes.length];
+        for (int i = 0; i < indexes.length; i++) {
+            inds[i] = indexes[i] == -1 ? size().dimensions()[i] : 1;
+        }
+
+        return applyUnaryOperator(t -> t.getTensor(indexes), (g, v) -> backwardNotYetImplemented(), "getTensor", s -> new Size(inds));
+    }
+
+    @Override
+    public void putTensor(V tensor, int...indexes) {
+        applyInlineUnaryOperator(t -> { t.putTensor(tensor.data().get(), indexes); return t; }, "putTensor");
+    }
+
+    @Override
+    public V cloneTensor() {
+        return applyUnaryOperator(D::cloneTensor, (g, v) -> this.backwardNotYetImplemented(), "cloneTensor", s -> s);
+    }
+
+    @Override
+    public V reshape(Size size) {
+        return applyUnaryOperator(f -> f.reshape(size), (g, v) -> g.reshape(size()), "reshape", s -> size);
+    }
+
+    @Override
+    public V resize_(Size size) {
+        V result = applyInlineUnaryOperator(t -> t.resize_(size), "resize_");
+        this.context = size;
+        return result;
     }
 
     @Override
     public V mul_(V other) {
-        return applyInlineBinaryOperator(other, D::mul_, "mul");
+        return applyInlineBinaryOperator(other, D::mul_, "mul_");
+    }
+
+    @Override
+    public V div_(V other) {
+        return applyInlineBinaryOperator(other, D::div_, "div_");
+    }
+
+    @Override
+    public V mul_(float v) {
+        return applyInlineUnaryOperator(t -> t.mul_(v), "mul");
+    }
+
+    @Override
+    public V div_(float v) {
+        return applyInlineUnaryOperator(t -> t.div_(v), "div");
+    }
+
+    @Override
+    public V sub_(float v) {
+        return applyInlineUnaryOperator(t -> t.sub_(v), "sub");
+    }
+
+    @Override
+    public V add_(float v) {
+        return applyInlineUnaryOperator(t -> t.add_(v), "add");
+    }
+
+    @Override
+    public void put(int index, float v) {
+        applyInlineUnaryOperator(t -> { t.put(index, v); return t; }, "put");
+    }
+
+    @Override
+    public void put(float v, int...indexes) {
+        applyInlineUnaryOperator(t -> { t.put(v, indexes); return t; }, "put");
+    }
+
+    @Override
+    public float get(int index) {
+        return data().get().get(index);
+    }
+
+    @Override
+    public float get(int... indexes) {
+        return data().get().get(indexes);
     }
 
     @Override
@@ -101,10 +208,10 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
 
         Size[] sizes = MultiplicationRules.matmul(size(), other.size());
 
-        return this.applyBinaryOperator(other, (f, s) -> f.reshape_(sizes[0]).matmul(s.reshape_(sizes[1])), (g, p) -> {
-            return g.reshape_(sizes[2]).matmul(p.getRight().reshape_(sizes[1]).t()).reshape_(size());
+        return this.applyBinaryOperator(other, (f, s) -> f.reshape(sizes[0]).matmul(s.reshape(sizes[1])), (g, p) -> {
+            return g.reshape(sizes[2]).matmul(p.getRight().reshape(sizes[1]).t()).reshape(size());
         }, (g, p) -> {
-            return g.reshape_(sizes[2]).t().matmul(p.getLeft().reshape_(sizes[0])).t().reshape_(other.size());
+            return g.reshape(sizes[2]).t().matmul(p.getLeft().reshape(sizes[0])).t().reshape(other.size());
         }, "matmul", (f, s) -> {
             Size result =  sizes[3];
             int[] dims = result.dimensions();
@@ -138,7 +245,8 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
 
     @Override
     public V normal_(float v1, float v2) {
-        throw new UnsupportedOperationException("Not yet implemented");
+
+        return applyInlineUnaryOperator(t -> t.normal_(v1, v2), "normal");
     }
 
     @Override
@@ -161,7 +269,7 @@ public abstract class DifferentiableWrappedTensorOperations<V extends Differenti
 
     @Override
     public V zero_() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return applyInlineUnaryOperator(t -> t.zero_(), "zero");
     }
 
     @Override

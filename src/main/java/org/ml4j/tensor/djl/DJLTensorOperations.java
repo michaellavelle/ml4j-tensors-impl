@@ -8,4 +8,6 @@ import org.ml4j.tensor.TensorOperations;
 public interface DJLTensorOperations extends TensorOperations<DJLTensorOperations>, Operatable<DJLTensorOperations, Size, DJLTensorOperations> {
 
 	NDArray getNDArray();
+
+	boolean isNativeGradient();
 }

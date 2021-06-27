@@ -14,19 +14,10 @@
 
 package org.ml4j.tensor;
 
-import ai.djl.ndarray.NDArray;
-import ai.djl.ndarray.types.Shape;
-import ai.djl.pytorch.engine.PtNDArray;
-import ai.djl.pytorch.engine.PtNDManager;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorFactory;
-import org.ml4j.tensor.djl.DJLTensorOperations;
-import org.mockito.MockitoAnnotations;
 
 /**
  * A base test for Tensor implementations.
@@ -34,48 +25,48 @@ import org.mockito.MockitoAnnotations;
  * @author Michael Lavelle
  *
  */
-public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
+public abstract class TensorTestBase<T extends Tensor<T, D>, D> extends TestBase<T, D> {
 
-    protected Size size;
+    protected abstract boolean isNativeGradientSupported();
+    protected abstract boolean isNativeGradientExpected();
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        size = new Size(2, 2);
-    }
-
-    protected abstract T createGradValue(float value, boolean requires_grad);
-   
-    protected abstract T createGradValue(D value, boolean requires_grad);
-
-    
-    protected abstract D createData(float value);
-
-    protected abstract D createData(float value, Size size);
-
-
-    protected abstract T createGradValue(float value, boolean requires_grad, Size size);
+    protected abstract void assertSize(T tensor, Size s);
 
     @Test
-    public void testMatMul() {
-        var left = createGradValue(-1, true, new Size(new Size(2, 128), new Size(512))).name_("a");
-        var right = createGradValue(1, true, new Size(512, 65)).name_("a");
+    public void test_reshape() {
+        var a = createGradValue(-4f, true, new Size(2, 128)).name_("a");
+        var b = a.reshape(new Size(1, 256));
 
-        var result = left.matmul(right);
-
-        result.backward();
-
-        Assert.assertNotNull(left.grad());
-        Assert.assertNotNull(right.grad());
+        Assert.assertEquals(a.numel(), b.numel());
+        assertEquals(a.data().get(), b.data().get());
+        assertSize(a, new Size(2, 128));
+        assertSize(b, new Size(1, 256));
     }
+
+    @Test
+    public void test_resize_() {
+        var a = createGradValue(-4f, true, new Size(2, 128)).name_("a");
+        var b = a.resize_(new Size(1, 256));
+
+        Assert.assertSame(a, b);
+        assertEquals(a.data().get(), b.data().get());
+        assertSize(a, new Size(1, 256));
+    }
+
 
 
     @Test
     public void test_example() {
 
         var a = createGradValue(-4f, true).name_("a");
+        if (!isNativeGradientExpected()) {
+            a.getGradNode().setDisableNativeGradient(true);
+        }
 
         var b = createGradValue(2.0f, true).name_("b");
+        if (!isNativeGradientExpected()) {
+            b.getGradNode().setDisableNativeGradient(true);
+        }
 
         var c = a.add(b);
 
@@ -104,12 +95,37 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
         assertEquals(createData(138.83f), a.grad().data().get());
 
         assertEquals(createData(645.58f), b.grad().data().get());
+
+        if (isNativeGradientSupported()) {
+            Assert.assertEquals(isNativeGradientExpected(), a.grad().isNativeGradient());
+            Assert.assertEquals(isNativeGradientExpected(), b.grad().isNativeGradient());
+            Assert.assertFalse(c.grad().isNativeGradient());
+            Assert.assertFalse(d.grad().isNativeGradient());
+            Assert.assertFalse(e.grad().isNativeGradient());
+            Assert.assertFalse(f.grad().isNativeGradient());
+            Assert.assertFalse(g.grad().isNativeGradient());
+        }
     }
-    
-    protected abstract void assertEquals(D value1, D value2);
-    
-    protected abstract D add(D value1, D value2);
-    protected abstract D mul(D value1, float value2);
+
+    @Test
+    public void test_hessian_vector2() {
+
+        var x = createGradValue(0.5f, true).name_("x");
+        var y = createGradValue(0.5f, true).name_("x");
+
+        if (!isNativeGradientExpected()) {
+            x.getGradNode().setDisableNativeGradient(true);
+            y.getGradNode().setDisableNativeGradient(true);
+        }
+
+        var z = x.add(y);
+        z.backward();
+
+        if (isNativeGradientSupported()) {
+            Assert.assertEquals(isNativeGradientExpected(), x.grad().isNativeGradient());
+            Assert.assertEquals(isNativeGradientExpected(), y.grad().isNativeGradient());
+        }
+    }
 
     @Test
     public void test_hessian_vector() {
@@ -118,6 +134,11 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
 
         var y = createGradValue(0.6f, true).name_("y");
 
+        if (!isNativeGradientExpected()) {
+            x.getGradNode().setDisableNativeGradient(true);
+            y.getGradNode().setDisableNativeGradient(true);
+        }
+
         var z = x.mul(x).add(y.mul(x).add(y.mul(y))).name_("z");
 
         var two = createGradValue(2, true).name_("two");
@@ -125,6 +146,7 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
         z.backward(new BackwardConfig().with_keep_graph(true));
 
         var xGradAfterFirstBackward = x.grad();
+
         var yGradAfterFirstBackward = y.grad();
 
         assertEquals(createData(1.6f), xGradAfterFirstBackward.data().get());
@@ -139,6 +161,7 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
         grad_sum.backward(new BackwardConfig());
 
         var xGradAfterSecondBackward = x.grad();
+
         var yGradAfterSecondBackward = y.grad();
 
         Assert.assertSame(xGradAfterFirstBackward, xGradAfterSecondBackward);
@@ -153,13 +176,66 @@ public abstract class TensorTestBase<T extends Tensor<T, D>, D> {
 
         Assert.assertArrayEquals(x.grad().getDataAsFloatArray(), x_grad.add(createGradValue(x_hv, false)).getDataAsFloatArray(), 0.001f);
         Assert.assertArrayEquals(y.grad().getDataAsFloatArray(), y_grad.add(createGradValue(y_hv, false)).getDataAsFloatArray(), 0.001f);
+
+        if (isNativeGradientSupported()) {
+            Assert.assertEquals(isNativeGradientExpected(), x.grad().isNativeGradient());
+            Assert.assertEquals(isNativeGradientExpected(), y.grad().isNativeGradient());
+        }
+
     }
 
-    private T one() {
-        return createGradValue(1, false);
+    @Test
+    public void test_sum() {
+
+        var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+        if (!isNativeGradientExpected()) {
+            a.getGradNode().setDisableNativeGradient(true);
+        }
+
+        var c = a.sum();
+
+        assertEquals(createData(-16f, new Size()), c.data().get());
+
+        c.backward();
+
+        assertEquals(createData(1, new Size(2, 2)), a.grad().data().get());
+
+        if (isNativeGradientSupported()) {
+            Assert.assertEquals(isNativeGradientExpected(), a.grad().isNativeGradient());
+        }
     }
 
-    private T ten() {
-        return createGradValue(10, false);
+    @Test
+    public void test_get_row() {
+
+        var a = createGradValue(-4f, true, new Size(2, 2)).name_("a");
+
+        var c = a.getTensor(-1, 0);
+
+        assertEquals(createData(-4, new Size(2, 1)), c.data().get());
+    }
+
+    @Test
+    public void testMatMul() {
+        var left = createGradValue(-2, true, new Size(new Size(2, 128), new Size(512))).name_("a");
+        var right = createGradValue(1, true, new Size(512, 65)).name_("a");
+
+        if (!isNativeGradientExpected()) {
+            left.getGradNode().setDisableNativeGradient(true);
+            right.getGradNode().setDisableNativeGradient(true);
+        }
+
+        var result = left.matmul(right);
+
+        result.backward();
+
+        Assert.assertNotNull(left.grad());
+        Assert.assertNotNull(right.grad());
+
+        if (isNativeGradientSupported()) {
+            Assert.assertEquals(isNativeGradientExpected(), left.grad().isNativeGradient());
+            Assert.assertEquals(isNativeGradientExpected(), right.grad().isNativeGradient());
+        }
     }
 }

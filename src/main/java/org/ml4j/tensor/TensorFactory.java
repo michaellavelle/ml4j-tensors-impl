@@ -24,4 +24,14 @@ import org.ml4j.autograd.AutogradValueFactory;
  */
 public interface TensorFactory<T extends Tensor<T, D>, D> extends AutogradValueFactory<T, D, Size> {
 
+    T create(float[] data, Size size);
+    T create(float[] data);
+    T create();
+    T ones(Size size);
+    T zeros(Size size);
+    T randn(Size size);
+    T rand(Size size);
+    T empty(Size size);
+
+
 }
