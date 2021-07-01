@@ -14,14 +14,12 @@
 
 package org.ml4j.tensor.djl;
 
-import ai.djl.ndarray.NDArray;
 import ai.djl.pytorch.engine.PtNDArray;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
 import org.ml4j.tensor.dl4j.DL4JTensor;
-import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
 /**
  * An AutogradValue implementation that supports the operations defined by TensorOperations,

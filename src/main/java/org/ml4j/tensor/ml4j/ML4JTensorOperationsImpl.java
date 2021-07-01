@@ -1,6 +1,5 @@
 package org.ml4j.tensor.ml4j;
 
-import ai.djl.ndarray.index.NDIndex;
 import org.jvmpy.symbolictensors.Operatable;
 import org.jvmpy.symbolictensors.Operation;
 import org.jvmpy.symbolictensors.Size;
@@ -541,19 +540,6 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 		float[] data = matrix.getRowByRowArray();
 		return data;
 	}
-
-	/*
-	@Override
-	public ML4JTensorOperations size_(Size size) {
-		if (size.numel() != this.numel()) {
-			throw new IllegalArgumentException();
-		} else {
-			this.size = size;
-		}
-		return this;
-	}
-
-	 */
 
 	@Override
 	public ML4JTensorOperations columnSums() {

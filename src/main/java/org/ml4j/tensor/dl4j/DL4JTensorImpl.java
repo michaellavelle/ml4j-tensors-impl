@@ -20,7 +20,6 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.impl.AutogradValueProperties;
-import org.ml4j.autograd.node.Node;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
@@ -32,8 +31,6 @@ import org.ml4j.tensor.ml4j.ML4JTensor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;

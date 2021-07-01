@@ -5,16 +5,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.BackwardConfig;
 import org.ml4j.autograd.node.Node;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorFactory;
-import org.mockito.MockitoAnnotations;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -173,9 +166,6 @@ public abstract class AutogradTestBase<V extends Tensor<V, D>, D extends TensorO
     }
 
 
-    //
-
-
     @Test
     public void test_both_scalartensor_addition() {
         var a = createRandomValue(true).name_("a");
@@ -203,16 +193,6 @@ public abstract class AutogradTestBase<V extends Tensor<V, D>, D extends TensorO
         Assert.assertEquals(b.grad().getDataAsFloatArray()[0], 2f, 0.001f);
 
         assertArrayEqual(a.grad().getDataAsFloatArray(), createOnesValue(false).mul(2f).getDataAsFloatArray(), 0.0001f);
-    }
-
-    private void printStatus(V a) {
-        System.out.println(a.name() + ":");
-        for (Node<?> b : a.getValueNode().next()) {
-            System.out.println(b + ":" +  b.isClosing() + ":" + b.isClosed());
-            for (Node<?> c : b.prev()) {
-                System.out.println("    " + c + ":" +  c.isClosing() + ":" + c.isClosed());
-            }
-        }
     }
 
     @Test

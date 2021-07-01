@@ -24,8 +24,6 @@ import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
 import org.ml4j.tensor.TensorTestBase;
-import org.ml4j.tensor.djl.DJLFromML4JTensorWrapperImpl;
-import org.ml4j.tensor.djl.DJLTensor;
 
 public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperations> {
 
