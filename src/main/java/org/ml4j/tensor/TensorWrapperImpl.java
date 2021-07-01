@@ -1,16 +1,11 @@
 package org.ml4j.tensor;
 
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.*;
+import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.CachingDataSupplier;
+import org.ml4j.autograd.CachingDataSupplierImpl;
 import org.ml4j.autograd.impl.AutogradValueProperties;
-import org.ml4j.autograd.impl.ValueNodeWrapper;
-import org.ml4j.autograd.node.GradNode;
-import org.ml4j.autograd.node.ValueNode;
-import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
-import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
-import org.ml4j.nn.components.DirectedComponentsContext;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorOperations;
 
 import java.util.function.Supplier;
 

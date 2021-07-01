@@ -92,14 +92,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         return size().dimensions()[d];
     }
 
-    /*
-    @Override
-    public DJLTensorOperations size_(Size size) {
-        throw new UnsupportedOperationException();
-    }
-
-
-     */
     @Override
     public DJLTensorOperations zero_() {
         this.ndArray = DJLTensorFactory.getManager().zeros(getShape(size()), DataType.FLOAT32);
@@ -475,16 +467,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         }
     }
 
-    private static int getProduct(Size size, int startDim) {
-        int product = 1;
-        for (int i = startDim; i < size.dimensions().length; i++) {
-            product = product * size.dimensions()[i];
-        }
-        return product;
-    }
-    
-    
-
     @Override
     public void put(int index, float value) {
         NDIndex ind = new NDIndex(getIndexes(size(), index));
@@ -543,52 +525,6 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
         }
         return new Shape(dims);
     }
-    /*
-    //@Override
-    public DJLTensorOperations filter(Range... ranges) {
-
-        int[] dims = new int[ranges.length];
-        int ind = 0;
-        int zeroCount = 0;
-        for (Range r : ranges) {
-            dims[ind] = r.getSize((int) size().decompose().get(ind).numel());
-            if (dims[ind] == 0) {
-                zeroCount++;
-            }
-            ind++;
-        }
-        long[] dims2 = new long[ranges.length - zeroCount];
-        int ind2 = 0;
-        for (int i = 0; i < dims.length; i++) {
-            if (dims[i] != 0) {
-                dims2[ind2] = dims[i];
-                ind2++;
-            }
-        }
-
-        // TODO
-        // TODO Auto-generated method stub
-
-        //Size newSize = new Size(dims2);
-        // TODO
-        for (long d : dims2) {
-            System.out.println("DIM:" + d);
-        }
-        for (long d : ndArray.getShape().getShape()) {
-            System.out.println("SHAPE:" + d);
-        }
-        boolean same = true;
-        if (dims2.length == ndArray.getShape().getShape().length) {
-            for (int i = 0; i < dims2.length; i++) {
-                if (dims2[i] != ndArray.getShape().getShape()[i]) {
-                    same = false;
-                }
-            }
-        }
-
-        return new DJLTensorOperations(ndArray, ndArray.hasGradient());
-    }
-     */
 
     @Override
     public float[] getDataAsFloatArray() {

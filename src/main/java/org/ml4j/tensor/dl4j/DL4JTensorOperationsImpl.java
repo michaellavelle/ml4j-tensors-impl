@@ -33,18 +33,6 @@ public class DL4JTensorOperationsImpl implements DL4JTensorOperations {
 		this.shape = a.dimensions();
 	}
 
-	/*
-	// @Override
-	public float item() {
-		float[] data = getDataAsFloatArray();
-		if (data.length != 1) {
-			throw new IllegalStateException();
-		}
-		return data[0];
-	}
-
-	 */
-
 	@Override
 	public String toString() {
 		return "" + getNDArray();
@@ -189,11 +177,6 @@ public class DL4JTensorOperationsImpl implements DL4JTensorOperations {
 			inds.add(indexes[i] == -1 ? ":" : (indexes[i] + ""));
 		}
 		String r = inds.toString().replace("[","").replace("]", "");
-		if (indexes.length == 2 && getNDArray().shape().length == 1) {
-		//return create(getNDArray().reshape(1, getShape().dimensions()[0]).get(new NDIndex(r)), false);
-		} else {
-			//return create(getNDArray().get(new NDIndex(r)), false);
-		}
 		throw new UnsupportedOperationException();
 	}
 

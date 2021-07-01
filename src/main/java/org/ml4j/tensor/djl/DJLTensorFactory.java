@@ -4,14 +4,10 @@ import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.pytorch.engine.PtEngine;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.impl.AutogradValueProperties;
-import org.ml4j.autograd.impl.DefaultAutogradValueRegistry;
 import org.ml4j.tensor.TensorFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 public class DJLTensorFactory implements TensorFactory<DJLTensor, DJLTensorOperations> {

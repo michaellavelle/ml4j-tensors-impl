@@ -23,7 +23,10 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 import org.ml4j.tensor.TensorTestBase;
-import org.ml4j.tensor.ml4j.*;
+import org.ml4j.tensor.ml4j.ML4JTensor;
+import org.ml4j.tensor.ml4j.ML4JTensorFactory;
+import org.ml4j.tensor.ml4j.ML4JTensorImpl;
+import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;

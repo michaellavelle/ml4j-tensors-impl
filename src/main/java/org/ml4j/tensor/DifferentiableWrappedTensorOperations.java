@@ -9,8 +9,6 @@ import org.ml4j.autograd.Value;
 import org.ml4j.autograd.arithmetic.operations.DifferentiableWrappedArithmeticOperations;
 import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.impl.AutogradValueProperties;
-import org.ml4j.autograd.node.Node;
-import org.ml4j.tensor.djl.DJLTensorOperations;
 
 import java.util.ArrayList;
 import java.util.List;

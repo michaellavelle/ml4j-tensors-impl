@@ -14,22 +14,13 @@
 
 package org.ml4j.tensor;
 
-import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorFactory;
-import org.ml4j.tensor.djl.DJLTensorImpl;
 import org.ml4j.tensor.ml4j.ML4JTensorFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A base test for Tensor implementations.

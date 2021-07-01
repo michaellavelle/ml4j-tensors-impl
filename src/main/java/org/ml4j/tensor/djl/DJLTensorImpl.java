@@ -24,10 +24,7 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.AutogradValueRegistry;
 import org.ml4j.autograd.BackwardConfig;
-import org.ml4j.autograd.impl.AutogradValueImpl;
 import org.ml4j.autograd.impl.AutogradValueProperties;
-import org.ml4j.autograd.node.GradNode;
-import org.ml4j.autograd.node.Node;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
@@ -39,10 +36,7 @@ import org.ml4j.tensor.ml4j.ML4JFromDJLTensorWrapperImpl;
 import org.ml4j.tensor.ml4j.ML4JTensor;
 import org.ml4j.tensor.ml4j.ML4JTensorImpl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -103,16 +97,6 @@ public class DJLTensorImpl extends DifferentiableWrappedTensorOperations<DJLTens
 	public DJLTensor toDJLTensor() {
 		return this;
 	}
-
-	/*
-	@Override
-	public DJLTensor size_(Size size) {
-		this.context = size;
-		return self();
-	}
-
-	 */
-
 
 	@Override
 	public void backward(DJLTensor g, BackwardConfig config) {

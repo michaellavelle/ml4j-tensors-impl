@@ -14,7 +14,6 @@
 
 package org.ml4j.tensor.dl4j;
 
-import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.impl.AutogradValueProperties;
