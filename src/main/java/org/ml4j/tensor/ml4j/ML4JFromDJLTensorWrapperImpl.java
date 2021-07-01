@@ -10,6 +10,7 @@ import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.TensorWrapperImpl;
 import org.ml4j.tensor.djl.*;
+import org.ml4j.tensor.dl4j.DL4JTensor;
 
 public class ML4JFromDJLTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, ML4JTensor, DJLTensorOperations, ML4JTensorOperations> implements ML4JTensor {
 
@@ -77,5 +78,20 @@ public class ML4JFromDJLTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, M
     @Override
     public ML4JTensor apply(DifferentiableBinaryOperator<ML4JTensor, ML4JTensorOperations, Size> differentiableBinaryOperator, ML4JTensor ml4JTensor) {
         return new ML4JTensorImpl(this, context).apply(differentiableBinaryOperator, ml4JTensor);
+    }
+
+    @Override
+    public DL4JTensor toDL4JTensor() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ML4JTensor toML4JTensor(DirectedComponentsContext context) {
+        return new ML4JTensorImpl(this, context);
+    }
+
+    @Override
+    public DJLTensor toDJLTensor() {
+        return new DJLTensorImpl(this);
     }
 }

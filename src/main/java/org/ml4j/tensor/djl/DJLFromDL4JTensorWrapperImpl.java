@@ -8,11 +8,10 @@ import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
+import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.TensorWrapperImpl;
-import org.ml4j.tensor.dl4j.DL4JTensor;
-import org.ml4j.tensor.dl4j.DL4JTensorOperations;
-import org.ml4j.tensor.dl4j.DL4JFromDJLTensorWrapperImpl;
-import org.ml4j.tensor.dl4j.DL4JTensorOperationsImpl;
+import org.ml4j.tensor.dl4j.*;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 
 
 public class DJLFromDL4JTensorWrapperImpl extends TensorWrapperImpl<DL4JTensor, DJLTensor, DL4JTensorOperations, DJLTensorOperations> implements DJLTensor {
@@ -88,5 +87,21 @@ public class DJLFromDL4JTensorWrapperImpl extends TensorWrapperImpl<DL4JTensor, 
     @Override
     public GradNode<DJLTensor> getGradNode() {
         return new GradNodeWrapper<>(t.getGradNode(), f -> new DJLFromDL4JTensorWrapperImpl(f).requires_grad_(false), f -> new DL4JFromDJLTensorWrapperImpl(f).requires_grad_(false));
+    }
+
+
+    @Override
+    public DL4JTensor toDL4JTensor() {
+        return new DL4JTensorImpl(this);
+    }
+
+    @Override
+    public ML4JTensor toML4JTensor(DirectedComponentsContext context) {
+        return null;
+    }
+
+    @Override
+    public DJLTensor toDJLTensor() {
+        return new DJLTensorImpl(this);
     }
 }

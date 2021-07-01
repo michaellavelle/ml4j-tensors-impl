@@ -7,11 +7,10 @@ import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.ValueNode;
 import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
+import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.TensorWrapperImpl;
-import org.ml4j.tensor.djl.DJLFromDL4JTensorWrapperImpl;
-import org.ml4j.tensor.djl.DJLTensor;
-import org.ml4j.tensor.djl.DJLTensorOperations;
-import org.ml4j.tensor.djl.DJLTensorOperationsImpl;
+import org.ml4j.tensor.djl.*;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -82,5 +81,20 @@ public class DL4JFromDJLTensorWrapperImpl extends TensorWrapperImpl<DJLTensor, D
         } else {
             return Nd4j.create(getDataAsFloatArray(), size().dimensions());
         }
+    }
+
+    @Override
+    public DL4JTensor toDL4JTensor() {
+        return new DL4JTensorImpl(this);
+    }
+
+    @Override
+    public ML4JTensor toML4JTensor(DirectedComponentsContext context) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public DJLTensor toDJLTensor() {
+        return new DJLTensorImpl(this);
     }
 }

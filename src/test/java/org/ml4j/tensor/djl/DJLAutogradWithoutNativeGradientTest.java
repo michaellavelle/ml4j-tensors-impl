@@ -4,6 +4,7 @@ import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.tensor.AutogradTestBase;
 
 
@@ -11,12 +12,12 @@ public class DJLAutogradWithoutNativeGradientTest extends AutogradTestBase<DJLTe
 
     @Override
     protected DJLTensorImpl createGradValue(float value, boolean requires_grad) {
-        return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false);
+        return new DJLTensorImpl(() -> createData(value, size), new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad));
     }
 
     @Override
     protected DJLTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
-        return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false);
+        return new DJLTensorImpl(() -> createData(value, size), new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad));
     }
 
     @Override
@@ -31,7 +32,7 @@ public class DJLAutogradWithoutNativeGradientTest extends AutogradTestBase<DJLTe
 
     @Override
     protected DJLTensorImpl createGradValue(DJLTensorOperations value, boolean requires_grad) {
-        return new DJLTensorImpl(() -> value, size, requires_grad, false);
+        return new DJLTensorImpl(() -> value, new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad));
     }
 
     private Shape getShape(Size size) {
@@ -67,7 +68,8 @@ public class DJLAutogradWithoutNativeGradientTest extends AutogradTestBase<DJLTe
     protected DJLTensorOperations mul(DJLTensorOperations value1, float value2) {
         return value1.mul(value2);
     }
-    
+
+
     @Override
     protected boolean isNativeGradientSupported() {
         return true;

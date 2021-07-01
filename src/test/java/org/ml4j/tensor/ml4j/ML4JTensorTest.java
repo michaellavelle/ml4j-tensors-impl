@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
@@ -45,9 +46,7 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 
 		var c = a.add(b);
 
-		ML4JTensorImpl t = (ML4JTensorImpl)c;
-
-		DJLTensor s = new DJLFromML4JTensorWrapperImpl(ML4JTensorFactory.DEFAULT_DIRECTED_COMPONENTS_CONTEXT, t);
+		var s = c.toDJLTensor();
 
 		var u = s.mul(s);
 
@@ -55,7 +54,7 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 
 		u.backward();
 
-		assertEquals(createData(-16f, new Size(2, 2)), t.grad().data().get());
+		assertEquals(createData(-16f, new Size(2, 2)), c.grad().data().get());
 
 		assertEquals(createData(-16f, new Size(2, 2)), a.grad().data().get());
 
@@ -67,17 +66,17 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 
 	@Override
 	protected ML4JTensorImpl createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensorImpl(context, () -> createData(value), size, requires_grad, false);
+        return new ML4JTensorImpl(context, () -> createData(value), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
 	}
 
 	@Override
 	protected ML4JTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
-		return new ML4JTensorImpl(context, () -> createData(value, size), size, requires_grad, false);
+		return new ML4JTensorImpl(context, () -> createData(value, size), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
 	}
 
 	@Override
 	protected ML4JTensorImpl createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensorImpl(context, () -> value, size, requires_grad, false);
+        return new ML4JTensorImpl(context, () -> value, new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad));
 	}
 
 	@Override
@@ -118,6 +117,7 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 			Assert.assertEquals(tensor.size().dimensions()[i], s.dimensions()[i]);
 
 		}
+
 		/*
 		if (s.dimensions().length == 2) {
 			Assert.assertEquals(tensor.data().get().getMatrix().getRows(), s.dimensions()[0]);
@@ -130,6 +130,15 @@ public class ML4JTensorTest extends TensorTestBase<ML4JTensor, ML4JTensorOperati
 		}
 		*/
 	}
+
+	@Override
+	protected ML4JTensor createGradValue(float[] data, int... dims) {
+		if (dims.length != 2) {
+			throw new IllegalArgumentException();
+		}
+		return new ML4JTensorImpl(context, context.getMatrixFactory().createMatrixFromRowsByRowsArray(dims[0], dims[1], data), new AutogradValueProperties<Size>().setContext(new Size(dims)));
+	}
+
 	@Override
 	protected boolean isNativeGradientSupported() {
 		return false;

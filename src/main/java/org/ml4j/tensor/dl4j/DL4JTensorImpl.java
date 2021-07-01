@@ -18,12 +18,17 @@ import ai.djl.ndarray.types.Shape;
 import org.jvmpy.symbolictensors.MultiplicationRules;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
+import org.ml4j.autograd.AutogradValueRegistry;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.autograd.node.Node;
+import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.DifferentiableWrappedTensorOperations;
 import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.djl.DJLFromDL4JTensorWrapperImpl;
 import org.ml4j.tensor.djl.DJLTensor;
 import org.ml4j.tensor.djl.DJLTensorImpl;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -38,12 +43,21 @@ import java.util.function.Supplier;
  */
 public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTensor, DL4JTensorOperations> implements AutogradValue<DL4JTensor, DL4JTensorOperations, Size>, TensorOperations<DL4JTensor>, org.ml4j.autograd.DataSupplier<DL4JTensorOperations>, Tensor<DL4JTensor, DL4JTensorOperations>, DL4JTensor {
 
-	public DL4JTensorImpl(Supplier<DL4JTensorOperations> data, Size size, boolean requires_grad, boolean create_graph) {
-		this(data, size, new ArrayList<>(), requires_grad, create_graph);
+	public DL4JTensorImpl(INDArray indArray, boolean requires_grad, AutogradValueRegistry registry) {
+		super(() -> new DL4JTensorOperationsImpl(indArray), new AutogradValueProperties<Size>().setRegistry(registry).setContext(getSize(indArray.shape())).setRequires_grad(requires_grad));
 	}
 
-	public <X extends AutogradValue<X, Y, Z>, Y, Z> DL4JTensorImpl(AutogradValue<X, Y, Z> other, Function<Y, DL4JTensorOperations> dataMapper, Function<Z, Size> contextMapper, Function<X, DL4JTensor> valueMapper, Function<DL4JTensor, X> valueReverseMapper, Supplier<Optional<DL4JTensor>> nativeGradientSupplier) {
+	private static Size getSize(long[] dimsArray) {
+		int[] dims = new int[dimsArray.length];
+		for (int i = 0; i < dims.length; i++) {
+			dims[i] = (int)dimsArray[i];
+		}
+		return new Size(dims);
+	}
+
+	public <X extends AutogradValue<X, Y, Z>, Y, Z> DL4JTensorImpl(AutogradValue<X, Y, Z> other, Function<Y, DL4JTensorOperations> dataMapper, Function<Z, Size> contextMapper, Function<X, DL4JTensor> valueMapper, Function<DL4JTensor, X> valueReverseMapper, Supplier<Optional<DL4JTensor>> nativeGradientSupplier, String name) {
 		super(other, dataMapper, contextMapper, valueMapper, valueReverseMapper, nativeGradientSupplier);
+		name_(name);
 	}
 
 	public DL4JTensorImpl(DL4JTensor other) {
@@ -51,11 +65,11 @@ public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTe
 	}
 
 	public DL4JTensorImpl(DJLTensor other) {
-		this(other, da -> da == null ? null : new DL4JTensorOperationsImpl(da), s -> s, d -> d == null ? null : new DL4JTensorImpl(d), m -> m == null ? null : new DJLTensorImpl(m), null);
+		this(other, da -> da == null ? null : new DL4JTensorOperationsImpl(da), s -> s, d -> d == null ? null : new DL4JTensorImpl(d), m -> m == null ? null : new DJLTensorImpl(m), null, other.name());
 	}
 
-	public DL4JTensorImpl(float data, Size size, boolean requires_grad, boolean create_graph) {
-		this(() -> new DL4JTensorOperationsImpl(createArray(data, size, requires_grad)), size, new ArrayList<>(), requires_grad, create_graph);
+	public DL4JTensorImpl(float data, AutogradValueProperties<Size> properties) {
+		this(() -> new DL4JTensorOperationsImpl(createArray(data, properties.getContext(), properties.isRequires_grad())), properties);
 	}
 
 	public INDArray getNDArray() {
@@ -72,13 +86,18 @@ public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTe
 
 
 	@Override
+	public DL4JTensor getTensor(int[]... ranges) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public DL4JTensor matmul(DL4JTensor other) {
 		Size origSize = this.size();
 		Size[] sizes = MultiplicationRules.matmul(size(), other.size());
 		return this.applyBinaryOperator(other, (f, s) -> f.matmul(s), (g, p) -> {
 			Size origGSize = sizes[3];
 			DL4JTensor r = g.reshape(sizes[2]).matmul(p.getRight().t());
-			//g.reshape_(origGSize);
+			//g.resize_(size());
 			return r;
 		}, (g, p) -> {
 			Size origGSize = sizes[3];
@@ -98,6 +117,8 @@ public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTe
 		});
 	}
 
+
+
 	private static INDArray createArray(float data, Size size, boolean requires_grad) {
 		INDArray arr = Nd4j.ones(size.dimensions()).mul(data);
 		return arr;
@@ -111,9 +132,9 @@ public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTe
 		return new Shape(s);
 	}
 
-	protected DL4JTensorImpl(Supplier<DL4JTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-		super(data, size, children, requires_grad, create_graph);
-		requires_grad_(requires_grad);
+	public DL4JTensorImpl(Supplier<DL4JTensorOperations> data, AutogradValueProperties<Size> properties) {
+		super(data, properties);
+		requires_grad_(properties.isRequires_grad());
 	}
 
 	@Override
@@ -151,23 +172,18 @@ public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTe
 			Size s = scalar ? new Size() : new Size(newDims);
 			INDArray matrix = s.dimensions().length == 0 ? Nd4j.scalar(data[0]) : Nd4j.create(data, s.dimensions());
 			DL4JTensorOperations ops = new DL4JTensorOperationsImpl(matrix);
-			return new DL4JTensorImpl(() -> ops, s, requires_grad(), create_graph);
+			return new DL4JTensorImpl(() -> ops, new AutogradValueProperties<Size>().setContext(s).setRequires_grad(requires_grad()).setRegistry(properties().getRegistry()).setCreate_graph(create_graph()));
 		}
 	}
 
 	@Override
-	public DL4JTensor view(Size size) {
-		throw new UnsupportedOperationException();
+	protected void close(DL4JTensorOperations dl4JTensorOperations) {
+
 	}
 
 	@Override
-	public void close() {
-		// No-op for now.
-	}
-
-	@Override
-	protected DL4JTensor createAutogradValue(Supplier<DL4JTensorOperations> data, Size size, List<Node<?>> children, boolean requires_grad, boolean create_graph) {
-		return new DL4JTensorImpl(data, size, children, requires_grad, create_graph);
+	protected DL4JTensor createAutogradValue(Supplier<DL4JTensorOperations> data, AutogradValueProperties<Size> properties) {
+		return new DL4JTensorImpl(data, properties);
 	}
 
 	@Override
@@ -188,5 +204,20 @@ public class DL4JTensorImpl extends DifferentiableWrappedTensorOperations<DL4JTe
 	@Override
 	public DL4JTensor get() {
 		return this;
+	}
+
+	@Override
+	public DL4JTensor toDL4JTensor() {
+		return this;
+	}
+
+	@Override
+	public ML4JTensor toML4JTensor(DirectedComponentsContext context) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
+	@Override
+	public DJLTensor toDJLTensor() {
+		return new DJLTensorImpl(new DJLFromDL4JTensorWrapperImpl(this));
 	}
 }

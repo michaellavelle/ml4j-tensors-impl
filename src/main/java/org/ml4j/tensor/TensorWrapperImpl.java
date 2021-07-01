@@ -1,9 +1,8 @@
 package org.ml4j.tensor;
 
 import org.jvmpy.symbolictensors.Size;
-import org.ml4j.autograd.AutogradValue;
-import org.ml4j.autograd.AutogradValueCreator;
-import org.ml4j.autograd.BackwardConfig;
+import org.ml4j.autograd.*;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.autograd.impl.ValueNodeWrapper;
 import org.ml4j.autograd.node.GradNode;
 import org.ml4j.autograd.node.ValueNode;
@@ -28,6 +27,26 @@ public abstract class TensorWrapperImpl<S extends Tensor<S, D>, T extends Tensor
         }
     }
 
+    @Override
+    public boolean isClosed() {
+        return t.isClosed();
+    }
+
+    @Override
+    public AutogradValueProperties<Size> properties() {
+        return t.properties();
+    }
+
+    @Override
+    public boolean isClosing() {
+        return t.isClosing();
+    }
+
+    @Override
+    public void setClosed(boolean b) {
+        t.setClosed(b);
+    }
+
     public S getT() {
         return t;
     }
@@ -46,6 +65,20 @@ public abstract class TensorWrapperImpl<S extends Tensor<S, D>, T extends Tensor
     @Override
     public boolean requires_grad() {
         return t.requires_grad();
+    }
+
+    @Override
+    public T grad(boolean close) {
+        if (cachedGrad != null) {
+            return cachedGrad;
+        }
+        S g = t.grad(close);
+        if (g == null) {
+            return null;
+        } else {
+            cachedGrad = create(g);
+            return cachedGrad;
+        }
     }
 
     @Override
@@ -164,8 +197,8 @@ public abstract class TensorWrapperImpl<S extends Tensor<S, D>, T extends Tensor
     }
 
     @Override
-    public Supplier<E> data() {
-        return () -> createData(t.data().get());
+    public CachingDataSupplier<E> data() {
+        return new CachingDataSupplierImpl<>(() -> createData(t.data().get()));
     }
 
     protected abstract E createData(D data);
@@ -232,7 +265,17 @@ public abstract class TensorWrapperImpl<S extends Tensor<S, D>, T extends Tensor
     }
 
     @Override
+    public T getTensor(int[]... indexes) {
+        return create(t.getTensor(indexes));
+    }
+
+    @Override
     public void putTensor(T tensor, int... indexes) {
+        t.putTensor(extract(tensor), indexes);
+    }
+
+    @Override
+    public void putTensor(T tensor, int[]... indexes) {
         t.putTensor(extract(tensor), indexes);
     }
 

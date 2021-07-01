@@ -14,25 +14,40 @@
 
 package org.ml4j.tensor.djl;
 
+import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.tensor.TensorTestBase;
 
 public class DJLTensorWithoutNativeGradientTest extends TensorTestBase<DJLTensor, DJLTensorOperations> {
 
 	@Override
 	protected DJLTensorImpl createGradValue(float value, boolean requires_grad) {
-        return new DJLTensorImpl(() -> createData(value), size, requires_grad, false);
+        return new DJLTensorImpl(() -> createData(value), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
+	}
+
+	private Shape getShape(int...dims) {
+		long[] d = new long[dims.length];
+		for (int i = 0; i < d.length; i++){
+			d[i] = dims[i];
+		}
+		return new Shape(d);
+	}
+
+	@Override
+	protected DJLTensor createGradValue(float[] data, int... dims) {
+		return new DJLTensorImpl(DJLTensorFactory.getManager().create(data, getShape(dims)), false, registry);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(DJLTensorOperations value, boolean requires_grad) {
-        return new DJLTensorImpl(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
+        return new DJLTensorImpl(() -> value, new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad)).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DJLTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new DJLTensorImpl(() -> createData(value, size), size, requires_grad, false);
+		return new DJLTensorImpl(() -> createData(value, size), new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad));
 	}
 
 	@Override

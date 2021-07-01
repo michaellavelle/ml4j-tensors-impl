@@ -10,6 +10,8 @@ import org.ml4j.autograd.operators.DifferentiableBinaryOperator;
 import org.ml4j.autograd.operators.DifferentiableUnaryOperator;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.tensor.TensorWrapperImpl;
+import org.ml4j.tensor.dl4j.DL4JTensor;
+import org.ml4j.tensor.dl4j.DL4JTensorImpl;
 import org.ml4j.tensor.ml4j.*;
 
 public class DJLFromML4JTensorWrapperImpl extends TensorWrapperImpl<ML4JTensor, DJLTensor, ML4JTensorOperations, DJLTensorOperations> implements DJLTensor {
@@ -87,5 +89,20 @@ public class DJLFromML4JTensorWrapperImpl extends TensorWrapperImpl<ML4JTensor, 
     @Override
     public GradNode<DJLTensor> getGradNode() {
         return new GradNodeWrapper<>(t.getGradNode(), f -> new DJLFromML4JTensorWrapperImpl(context, f).requires_grad_(false), f -> new ML4JFromDJLTensorWrapperImpl(context, f).requires_grad_(false));
+    }
+
+    @Override
+    public DL4JTensor toDL4JTensor() {
+        return new DL4JTensorImpl(this);
+    }
+
+    @Override
+    public ML4JTensor toML4JTensor(DirectedComponentsContext context) {
+        return new ML4JTensorImpl(this, context);
+    }
+
+    @Override
+    public DJLTensor toDJLTensor() {
+        return new DJLTensorImpl(this);
     }
 }

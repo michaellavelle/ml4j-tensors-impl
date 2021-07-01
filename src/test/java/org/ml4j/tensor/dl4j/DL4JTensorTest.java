@@ -14,11 +14,14 @@
 
 package org.ml4j.tensor.dl4j;
 
+import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.tensor.TensorTestBase;
 import org.ml4j.tensor.djl.DJLTensorOperations;
 import org.ml4j.tensor.ml4j.ML4JTensorOperations;
+import org.nd4j.linalg.factory.Nd4j;
 
 public class DL4JTensorTest extends TensorTestBase<DL4JTensor, DL4JTensorOperations> {
 
@@ -132,17 +135,17 @@ public class DL4JTensorTest extends TensorTestBase<DL4JTensor, DL4JTensorOperati
 
 	@Override
 	protected DL4JTensor createGradValue(float value, boolean requires_grad) {
-        return new DL4JTensorImpl(() -> createData(value), size, requires_grad, false).requires_grad_(requires_grad);
+        return new DL4JTensorImpl(() -> createData(value), new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad)).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DL4JTensor createGradValue(DL4JTensorOperations value, boolean requires_grad) {
-        return new DL4JTensorImpl(() -> value, size, requires_grad, false).requires_grad_(requires_grad);
+        return new DL4JTensorImpl(() -> value, new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad)).requires_grad_(requires_grad);
 	}
 
 	@Override
 	protected DL4JTensor createGradValue(float value, boolean requires_grad, Size size) {
-		return new DL4JTensorImpl(() -> createData(value, size), size, requires_grad, false).requires_grad_(requires_grad);
+		return new DL4JTensorImpl(() -> createData(value, size), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad)).requires_grad_(requires_grad);
 	}
 
 	@Override
@@ -209,6 +212,16 @@ public class DL4JTensorTest extends TensorTestBase<DL4JTensor, DL4JTensorOperati
 			Assert.assertEquals(tensor.getNDArray().shape()[i], s.dimensions()[i]);
 
 		}
+	}
+
+	@Override
+	protected DL4JTensor createGradValue(float[] data, int... dims) {
+		return new DL4JTensorImpl(Nd4j.create(data, dims), false, registry);
+	}
+
+
+	@Override
+	public void testMatMul() {
 	}
 
 	@Override

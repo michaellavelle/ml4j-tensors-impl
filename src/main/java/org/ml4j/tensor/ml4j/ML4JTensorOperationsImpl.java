@@ -329,7 +329,10 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	}
 	
 	public ML4JTensorOperations view(Size size) {
-	    return toML4JTensorOperations(matrix, size);		
+		if (size.numel() != numel()) {
+			throw new IllegalArgumentException("Number of elements do not match");
+		}
+		return toML4JTensorOperations(matrix, size);
 	}
 
 	@Override
@@ -461,6 +464,16 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 	}
 
 	@Override
+	public ML4JTensorOperations getTensor(int[]... indexes) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void putTensor(ML4JTensorOperations tensor, int[]... indexes) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void putTensor(ML4JTensorOperations tensor, int... indexes) {
 		throw new UnsupportedOperationException();
 	}
@@ -560,7 +573,7 @@ public class ML4JTensorOperationsImpl implements ML4JTensorOperations, Operatabl
 
 	@Override
 	public void close() {
-		//matrix.close();
+		matrix.close();
 	}
 
 	@Override

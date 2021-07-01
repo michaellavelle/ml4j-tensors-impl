@@ -174,12 +174,12 @@ public class DL4JTensorOperationsImpl implements DL4JTensorOperations {
 
 	@Override
 	public float get(int index) {
-		throw new UnsupportedOperationException();
+		return getNDArray().getFloat(index);
 	}
 
 	@Override
 	public float get(int... indexes) {
-		throw new UnsupportedOperationException();
+		return getNDArray().getFloat(indexes);
 	}
 
 	@Override
@@ -194,6 +194,16 @@ public class DL4JTensorOperationsImpl implements DL4JTensorOperations {
 		} else {
 			//return create(getNDArray().get(new NDIndex(r)), false);
 		}
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public DL4JTensorOperations getTensor(int[]... ranges) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void putTensor(DL4JTensorOperations tensor, int[]... indexes) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -375,6 +385,12 @@ public class DL4JTensorOperationsImpl implements DL4JTensorOperations {
 
 	@Override
 	public DL4JTensorOperations view(int... ints) {
+		if (new Size(ints).numel() != numel()) {
+			throw new IllegalArgumentException("Number of elements do not match");
+		}
+		if (numel() != getNDArray().length()) {
+			throw new IllegalArgumentException("Number of elements do not match");
+		}
 		return applyUnaryOperation(t -> t.reshape(ints));
 	}
 
@@ -388,6 +404,9 @@ public class DL4JTensorOperationsImpl implements DL4JTensorOperations {
 
 	@Override
 	public DL4JTensorOperations view(Size size) {
+		if (size.numel() != numel()) {
+			throw new IllegalArgumentException("Number of elements do not match");
+		}
 		return applyUnaryOperation(t -> t.reshape(size.dimensions()));
 	}
 

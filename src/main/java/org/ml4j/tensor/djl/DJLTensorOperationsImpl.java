@@ -118,20 +118,27 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations view(int... ints) {
-        if (ints.length == 1) {
+        if (ints.length == 1 && ints[0] == -1) {
             ints[0] = (int) size().numel();
         }
-        return applyUnaryOperation(t -> t.reshape(getShape(new Size(ints))));
+        Size newSize = new Size(ints);
+        if (newSize.numel() != numel()) {
+            throw new IllegalArgumentException("Number of elements do not match");
+        }
+        return applyUnaryOperation(t -> t.reshape(getShape(newSize)));
     }
 
     @Override
     public void close() {
-
+        //ndArray.close();
     }
 
 
     @Override
     public DJLTensorOperations view(Size size) {
+        if (size.numel() != numel()) {
+            throw new IllegalArgumentException("Number of elements do not match");
+        }
         return applyUnaryOperation(t -> t.reshape(getShape(size)));
     }
 
@@ -222,7 +229,7 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
 
     @Override
     public DJLTensorOperations add(DJLTensorOperations other) {
-        return applyBinaryOperation(other, (f, s) -> f.add(s));
+        return applyBinaryOperation(other, (f, s) -> { return f.add(s); });
     }
 
     protected DJLTensorOperations applyBinaryOperation(DJLTensorOperations other, BinaryOperator<NDArray> op) {
@@ -388,6 +395,52 @@ public class DJLTensorOperationsImpl implements TensorOperations<DJLTensorOperat
             return create(getNDArray().reshape(1, getShape().getShape()[0]).get(new NDIndex(r)), false);
         } else {
             return create(getNDArray().get(new NDIndex(r)), false);
+        }
+    }
+
+    @Override
+    public DJLTensorOperations getTensor(int[]... ranges) {
+        List<String> inds = new ArrayList<>();
+        for (int i = 0; i < ranges.length; i++) {
+            if (ranges[i][0] == -1 && ranges[i][1] == -1) {
+                inds.add("0:" + size().dimensions()[i]);
+            } else {
+                String l = ranges[i][0] == -1 ? "0" : (ranges[i][0] + "");
+                String r = ranges[i][1] == -1 ? (size().dimensions()[i] + "") : (ranges[i][1] + "");
+                inds.add(l + ":" + r);
+            }
+
+        }
+        String r = inds.toString().replace("[","").replace("]", "");
+
+        if (false && ranges.length == 2 && getNDArray().getShape().getShape().length == 1) {
+            return create(getNDArray().reshape(1, getShape().getShape()[0]).get(new NDIndex(r)), false);
+        } else {
+            return create(getNDArray().get(new NDIndex(r)), false);
+        }
+    }
+
+    @Override
+    public void putTensor(DJLTensorOperations tensor, int[]... ranges) {
+        List<String> inds = new ArrayList<>();
+        for (int i = 0; i < ranges.length; i++) {
+            if (ranges[i][0] == -1 && ranges[i][1] == -1) {
+                inds.add("0:" + size().dimensions()[i]);
+            } else {
+                String l = ranges[i][0] == -1 ? "0" : (ranges[i][0] + "");
+                String r = ranges[i][1] == -1 ? (size().dimensions()[i] + "") : (ranges[i][1] + "");
+                inds.add(l + ":" + r);
+            }
+
+        }
+        String r = inds.toString().replace("[","").replace("]", "");
+
+
+        if (false && ranges.length == 2 && getNDArray().getShape().getShape().length == 1) {
+            throw new UnsupportedOperationException();
+            //return create(getNDArray().reshape(1, getShape().getShape()[0]).get(new NDIndex(r)), false);
+        } else {
+            ndArray.set(new NDIndex(r), tensor.getNDArray());
         }
     }
 
