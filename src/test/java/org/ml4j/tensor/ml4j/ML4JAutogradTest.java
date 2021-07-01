@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.Matrix;
 import org.ml4j.MatrixFactory;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
@@ -18,17 +19,17 @@ public class ML4JAutogradTest extends AutogradTestBase<ML4JTensor, ML4JTensorOpe
 
     @Override
     protected ML4JTensorImpl createGradValue(float value, boolean requires_grad) {
-        return new ML4JTensorImpl(context, () -> createData(value), size, requires_grad, false);
+        return new ML4JTensorImpl(context, () -> createData(value), new AutogradValueProperties<Size>().setContext(size).setRequires_grad(requires_grad));
     }
 
     @Override
     protected ML4JTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
-        return new ML4JTensorImpl(context, () -> createData(value, size), size, requires_grad, false);
+        return new ML4JTensorImpl(context, () -> createData(value, size), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
     }
 
     @Override
     protected ML4JTensorImpl createGradValue(ML4JTensorOperations value, boolean requires_grad) {
-        return new ML4JTensorImpl(context, () -> value, size, requires_grad, false);
+        return new ML4JTensorImpl(context, () -> value, new AutogradValueProperties<Size>().setContext(size).setRegistry(registry).setRequires_grad(requires_grad));
     }
 
     @Override
@@ -85,4 +86,13 @@ public class ML4JAutogradTest extends AutogradTestBase<ML4JTensor, ML4JTensorOpe
         return createGradValue(1, requires_grad, new Size(dims));
     }
 
+    @Override
+    public void test_tensor_broadcast_addition() {
+
+    }
+
+    @Override
+    public void test_tensor_broadcast_addition2() {
+
+    }
 }

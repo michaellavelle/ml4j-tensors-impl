@@ -31,6 +31,10 @@ public interface TensorOperations<T> extends Supplier<T>, TensorDataContainer, A
 
     T getTensor(int...indexes);
 
+    T getTensor(int[]...ranges);
+
+    void putTensor(T tensor, int[]...indexes);
+
     void putTensor(T tensor, int...indexes);
 
     T argMax(int axis);

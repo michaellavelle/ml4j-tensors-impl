@@ -3,6 +3,7 @@ package org.ml4j.tensor.dl4j;
 import ai.djl.ndarray.types.Shape;
 import org.junit.Assert;
 import org.jvmpy.symbolictensors.Size;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.tensor.AutogradTestBase;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -11,12 +12,12 @@ public class DL4JAutogradTest extends AutogradTestBase<DL4JTensor, DL4JTensorOpe
 
     @Override
     protected DL4JTensorImpl createGradValue(float value, boolean requires_grad) {
-        return new DL4JTensorImpl(() -> createData(value, size), size, requires_grad, false);
+        return new DL4JTensorImpl(() -> createData(value, size), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
     }
 
     @Override
     protected DL4JTensorImpl createGradValue(float value, boolean requires_grad, Size size) {
-        return new DL4JTensorImpl(() -> createData(value, size), size, requires_grad, false);
+        return new DL4JTensorImpl(() -> createData(value, size), new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
     }
 
     @Override
@@ -31,7 +32,7 @@ public class DL4JAutogradTest extends AutogradTestBase<DL4JTensor, DL4JTensorOpe
 
     @Override
     protected DL4JTensorImpl createGradValue(DL4JTensorOperations value, boolean requires_grad) {
-        return new DL4JTensorImpl(() -> value, size, requires_grad, false);
+        return new DL4JTensorImpl(() -> value, new AutogradValueProperties<Size>().setRegistry(registry).setContext(size).setRequires_grad(requires_grad));
     }
 
     private Shape getShape(Size size) {
@@ -99,5 +100,15 @@ public class DL4JAutogradTest extends AutogradTestBase<DL4JTensor, DL4JTensorOpe
         } else {
             return new DL4JTensorOperationsImpl(Nd4j.create(data, size.dimensions()));
         }
+    }
+
+    @Override
+    public void test_tensor_broadcast_addition() {
+
+    }
+
+    @Override
+    public void test_tensor_broadcast_addition2() {
+
     }
 }

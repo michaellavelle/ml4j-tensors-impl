@@ -20,6 +20,7 @@ import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.tensor.Tensor;
 import org.ml4j.tensor.TensorOperations;
+import org.ml4j.tensor.dl4j.DL4JTensor;
 import org.ml4j.tensor.ml4j.ML4JTensorOperations;
 
 /**
@@ -31,4 +32,5 @@ import org.ml4j.tensor.ml4j.ML4JTensorOperations;
  */
 public interface DJLTensor extends AutogradValue<DJLTensor, DJLTensorOperations, Size>, TensorOperations<DJLTensor>, org.ml4j.autograd.DataSupplier<DJLTensorOperations>, Tensor<DJLTensor, DJLTensorOperations> {
     PtNDArray getNDArray();
+    DL4JTensor toDL4JTensor();
 }

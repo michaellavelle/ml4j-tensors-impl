@@ -2,6 +2,7 @@ package org.ml4j.tensor.ml4j;
 
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.MatrixFactory;
+import org.ml4j.autograd.impl.AutogradValueProperties;
 import org.ml4j.jblas.JBlasRowMajorMatrixFactory;
 import org.ml4j.nn.components.DirectedComponentsContext;
 import org.ml4j.nn.components.DirectedComponentsContextImpl;
@@ -17,12 +18,12 @@ public class ML4JTensorFactory implements TensorFactory<ML4JTensor, ML4JTensorOp
 
     @Override
     public ML4JTensorImpl create(Supplier<ML4JTensorOperations> supplier, Size size) {
-        return new ML4JTensorImpl(DEFAULT_DIRECTED_COMPONENTS_CONTEXT, supplier, size, false, false);
+        return new ML4JTensorImpl(DEFAULT_DIRECTED_COMPONENTS_CONTEXT, supplier, new AutogradValueProperties<Size>().setContext(size));
     }
 
     @Override
     public ML4JTensorImpl create(float[] data, Size size) {
-        return new ML4JTensorImpl(DEFAULT_DIRECTED_COMPONENTS_CONTEXT, () -> new ML4JTensorOperationsImpl(DEFAULT_DIRECTED_COMPONENTS_CONTEXT, DEFAULT_MATRIX_FACTORY.createMatrixFromRowsByRowsArray(size.dimensions()[0], size.dimensions()[1], data), size), size, false, false);
+        return new ML4JTensorImpl(DEFAULT_DIRECTED_COMPONENTS_CONTEXT, () -> new ML4JTensorOperationsImpl(DEFAULT_DIRECTED_COMPONENTS_CONTEXT, DEFAULT_MATRIX_FACTORY.createMatrixFromRowsByRowsArray(size.dimensions()[0], size.dimensions()[1], data), size), new AutogradValueProperties<Size>().setContext(size));
     }
 
     @Override

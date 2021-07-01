@@ -16,6 +16,10 @@ package org.ml4j.tensor;
 import org.jvmpy.symbolictensors.Size;
 import org.ml4j.autograd.AutogradValue;
 import org.ml4j.autograd.DataSupplier;
+import org.ml4j.nn.components.DirectedComponentsContext;
+import org.ml4j.tensor.djl.DJLTensor;
+import org.ml4j.tensor.dl4j.DL4JTensor;
+import org.ml4j.tensor.ml4j.ML4JTensor;
 
 /**
  * Interface of our Tensor - extending from both AutogradValue and TensorOperations.
@@ -24,4 +28,8 @@ import org.ml4j.autograd.DataSupplier;
  */
 public interface Tensor<T extends Tensor<T, D>, D> extends AutogradValue<T, D, Size>, TensorOperations<T>, DataSupplier<D> {
     boolean isNativeGradient();
+
+    DL4JTensor toDL4JTensor();
+    ML4JTensor toML4JTensor(DirectedComponentsContext context);
+    DJLTensor toDJLTensor();
 }
